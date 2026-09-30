@@ -6,127 +6,587 @@
 <title>Neon Admin Login</title>
 
 <style>
-video#bgVideo{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;object-fit:contain;background:black;}
-body{margin:0;min-height:100vh;display:flex;justify-content:center;align-items:center;font-family:Arial,sans-serif;}
-.login-box{width:100%;max-width:350px;padding:40px 30px;background:#0d0d0dd9;text-align:center;border-radius:15px;position:relative;box-shadow:0 0 30px #0a0a0a;animation:glowBox 2s infinite alternate;}
-@keyframes glowBox{from{box-shadow:0 0 20px #121111,0 0 40px #070707;}to{box-shadow:0 0 40px #080808,0 0 80px #101010;}}
-.logo{width:100px;margin:0 auto 15px auto;animation:floatLogo 3s ease-in-out infinite;}
-.logo img{width:100%;border-radius:50%;}
-@keyframes floatLogo{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
-.login-box h2{margin-bottom:30px;color:#0080ff;letter-spacing:3px;animation:flicker 1.5s infinite alternate;}
-@keyframes flicker{0%{opacity:1;text-shadow:0 0 10px #000;}100%{opacity:0.6;text-shadow:0 0 30px #000;}}
-.input-box{position:relative;margin-bottom:30px;}
-.input-box input{width:100%;padding:10px 35px 10px 0;font-size:16px;color:#fff;background:transparent;border:none;border-bottom:2px solid #010101;outline:none;}
-.input-box label{position:absolute;top:10px;left:0;color:#aaa;pointer-events:none;transition:0.5s;}
-.input-box input:focus~label,.input-box input:valid~label{top:-15px;font-size:12px;color:#0080ff;}
-.eye-toggle{position:absolute;top:8px;right:0;width:25px;height:25px;cursor:pointer;fill:#aaa;transition:fill 0.3s ease;}
-.eye-toggle:hover{fill:#0080ff;}
-.btn-container{position:relative;width:100%;margin-top:20px;border-radius:30px;overflow:hidden;}
-.btn-container::before{content:"";position:absolute;inset:-2px;background:conic-gradient(#00aaff 0deg,#00aaff 360deg);animation:rotate 6s linear infinite;}
-.btn-container::after{content:"";position:absolute;inset:3px;background:#0d0d0d;border-radius:30px;}
-@keyframes rotate{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
-.btn-container button{width:100%;padding:14px 12px;background:transparent;color:#00aaff;font-weight:bold;font-size:16px;border:none;border-radius:30px;cursor:pointer;position:relative;z-index:1;transition:all 0.3s ease;}
-.btn-container button:hover{background:#00aaff;color:#000;box-shadow:0 0 20px #00aaff;}
-#loadingScreen{position:fixed;inset:0;width:100%;height:100%;z-index:999999;display:none;align-items:center;justify-content:center;background:#0d0d0d;overflow:hidden;}
-#loadingScreen.show{display:flex;animation:fadeInScreen 0.6s ease forwards;}
-@keyframes fadeInScreen{from{opacity:0;}to{opacity:1;}}
-#loadingScreen .bg{position:absolute;inset:0;background-image:url('loading.jpg');background-size:cover;background-position:center;background-repeat:no-repeat;z-index:1;animation:slowZoom 14s ease-in-out infinite alternate;}
-@keyframes slowZoom{from{transform:scale(1);}to{transform:scale(1.08);}}
-#loadingScreen .overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(120,60,220,0.10),rgba(80,40,180,0.05),rgba(120,60,220,0.15));z-index:2;}
-#loadingScreen .sparkles{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;}
-#loadingScreen .sparkles span{position:absolute;width:6px;height:6px;background:rgba(255,255,255,0.85);border-radius:50%;box-shadow:0 0 12px rgba(200,160,255,0.9);animation:floatUp 8s linear infinite;opacity:0;}
-#loadingScreen .sparkles span:nth-child(1){left:8%;animation-delay:0s;animation-duration:7s;}
-#loadingScreen .sparkles span:nth-child(2){left:18%;animation-delay:1.2s;animation-duration:9s;}
-#loadingScreen .sparkles span:nth-child(3){left:28%;animation-delay:2.4s;animation-duration:8s;}
-#loadingScreen .sparkles span:nth-child(4){left:38%;animation-delay:0.6s;animation-duration:10s;}
-#loadingScreen .sparkles span:nth-child(5){left:48%;animation-delay:3s;animation-duration:7.5s;}
-#loadingScreen .sparkles span:nth-child(6){left:58%;animation-delay:1.8s;animation-duration:9.5s;}
-#loadingScreen .sparkles span:nth-child(7){left:68%;animation-delay:0.4s;animation-duration:8.5s;}
-#loadingScreen .sparkles span:nth-child(8){left:78%;animation-delay:2.6s;animation-duration:7.2s;}
-#loadingScreen .sparkles span:nth-child(9){left:88%;animation-delay:3.4s;animation-duration:9.2s;}
-#loadingScreen .sparkles span:nth-child(10){left:93%;animation-delay:1.5s;animation-duration:8.8s;}
-#loadingScreen .sparkles span:nth-child(11){left:13%;animation-delay:4.2s;animation-duration:7.7s;}
-#loadingScreen .sparkles span:nth-child(12){left:43%;animation-delay:4.8s;animation-duration:8.3s;}
-@keyframes floatUp{0%{transform:translateY(100vh) scale(0.4);opacity:0;}15%{opacity:1;}90%{opacity:1;}100%{transform:translateY(-40px) scale(1);opacity:0;}}
-#loadingScreen .content{position:relative;z-index:4;text-align:center;padding:20px;width:100%;max-width:720px;}
-#loadingScreen .animated-title{font-family:'Georgia','Times New Roman',serif;font-style:italic;font-size:clamp(48px,9vw,96px);font-weight:700;margin:0;display:flex;justify-content:center;flex-wrap:wrap;gap:0;line-height:1.1;filter:drop-shadow(0 4px 20px rgba(90,40,180,0.55));}
-#loadingScreen .animated-title span{display:inline-block;color:#ffffff;text-shadow:0 0 12px rgba(160,100,255,0.9),0 0 25px rgba(120,60,220,0.7),0 3px 8px rgba(0,0,0,0.35);animation:letterWave 2.4s ease-in-out infinite;animation-delay:calc(var(--i) * 0.12s);}
-@keyframes letterWave{0%,100%{transform:translateY(0) rotate(0deg) scale(1);opacity:1;}25%{transform:translateY(-14px) rotate(-3deg) scale(1.06);opacity:0.95;}50%{transform:translateY(0) rotate(0deg) scale(1);opacity:1;}75%{transform:translateY(6px) rotate(3deg) scale(0.98);opacity:0.9;}}
-#loadingScreen .subtitle{font-family:'Georgia','Times New Roman',serif;font-size:clamp(18px,3.2vw,34px);letter-spacing:0.45em;color:#ffffff;margin:6px 0 0 0;font-weight:400;text-shadow:0 0 14px rgba(160,100,255,0.85);animation:subtitleFade 3s ease-in-out infinite;}
-@keyframes subtitleFade{0%,100%{opacity:1;letter-spacing:0.45em;}50%{opacity:0.75;letter-spacing:0.55em;}}
-#loadingScreen .tagline{font-family:Arial,sans-serif;font-size:clamp(11px,1.4vw,15px);letter-spacing:0.35em;color:#f0e6ff;margin:10px 0 0 0;font-weight:500;text-shadow:0 0 10px rgba(160,100,255,0.75);}
-#loadingScreen .progress-wrap{position:relative;width:min(420px,80%);height:12px;margin:40px auto 0;background:rgba(255,255,255,0.25);border-radius:999px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.3),0 0 20px rgba(120,60,220,0.5);}
-#loadingScreen .progress-fill{position:absolute;top:0;left:0;height:100%;width:0%;background:linear-gradient(90deg,#7b3fe4,#a566ff,#7b3fe4);background-size:200% 100%;border-radius:999px;animation:progressGrow 3s ease-out forwards,shimmer 1.5s linear infinite;box-shadow:0 0 16px rgba(165,102,255,0.9);}
-@keyframes progressGrow{from{width:0%;}to{width:100%;}}
-@keyframes shimmer{0%{background-position:0% 0%;}100%{background-position:200% 0%;}}
-#loadingScreen .loading-label{margin-top:18px;font-family:Arial,sans-serif;font-size:14px;letter-spacing:0.35em;color:#ffffff;font-weight:600;text-shadow:0 0 12px rgba(160,100,255,0.9);animation:dotBlink 1.4s infinite;}
-@keyframes dotBlink{0%,100%{opacity:1;}50%{opacity:0.4;}}
-#loadingScreen .loading-dots{display:flex;justify-content:center;gap:8px;margin-top:14px;}
-#loadingScreen .loading-dots span{width:10px;height:10px;background:#ffffff;border-radius:50%;box-shadow:0 0 12px rgba(165,102,255,0.9);animation:dotBounce 1.4s infinite ease-in-out;}
-#loadingScreen .loading-dots span:nth-child(1){animation-delay:0s;}
-#loadingScreen .loading-dots span:nth-child(2){animation-delay:0.2s;}
-#loadingScreen .loading-dots span:nth-child(3){animation-delay:0.4s;}
-@keyframes dotBounce{0%,100%{transform:translateY(0);opacity:0.6;}50%{transform:translateY(-10px);opacity:1;}}
-#loadingScreen .footer-tag{margin-top:26px;font-family:'Georgia','Times New Roman',serif;font-style:italic;font-size:clamp(13px,1.6vw,18px);letter-spacing:0.12em;color:#f3ecff;text-shadow:0 0 12px rgba(120,60,220,0.8);}
-#loadingScreen .footer-tag .sep{display:inline-block;margin:0 10px;color:#a566ff;font-style:normal;}
-#welcomeBanner{position:fixed;top:40px;left:50%;transform:translateX(-50%) translateY(-100px);z-index:9999999;background:linear-gradient(135deg,#7b3fe4,#a566ff);color:#ffffff;padding:14px 30px;border-radius:999px;font-family:Arial,sans-serif;font-size:18px;font-weight:700;letter-spacing:0.08em;text-shadow:0 0 10px rgba(255,255,255,0.5);box-shadow:0 0 30px rgba(165,102,255,0.9),inset 0 0 20px rgba(255,255,255,0.15);opacity:0;transition:all 0.7s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;}
-#welcomeBanner.show{opacity:1;transform:translateX(-50%) translateY(0);}
-#welcomeBanner .wave{display:inline-block;animation:waveHand 0.6s ease-in-out infinite alternate;transform-origin:70% 70%;margin-left:8px;}
-@keyframes waveHand{from{transform:rotate(-15deg);}to{transform:rotate(15deg);}}
+
+/* ===== VIDEO BACKGROUND FIXED ===== */
+video#bgVideo{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index:-1;
+    object-fit:contain;
+    background:black;
+}
+
+/* ===== BODY ===== */
+body {
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:Arial, sans-serif;
+}
+
+/* ===== Login Box ===== */
+.login-box {
+    width:100%;
+    max-width:350px;
+    padding:40px 30px;
+    background:#0d0d0dd9;
+    text-align:center;
+    border-radius:15px;
+    position:relative;
+    box-shadow:0 0 30px #0a0a0a;
+    animation:glowBox 2s infinite alternate;
+}
+
+@keyframes glowBox{
+from{box-shadow:0 0 20px #121111,0 0 40px #070707;}
+to{box-shadow:0 0 40px #080808,0 0 80px #101010;}
+}
+
+/* ===== LOGO ===== */
+.logo{
+width:100px;
+margin:0 auto 15px auto;
+animation:floatLogo 3s ease-in-out infinite;
+}
+.logo img{
+width:100%;
+border-radius:50%;
+}
+@keyframes floatLogo{
+0%,100%{transform:translateY(0);}
+50%{transform:translateY(-8px);}
+}
+
+/* ===== Title ===== */
+.login-box h2{
+margin-bottom:30px;
+color:#0080ff;
+letter-spacing:3px;
+animation:flicker 1.5s infinite alternate;
+}
+
+@keyframes flicker{
+0%{opacity:1;text-shadow:0 0 10px #000;}
+100%{opacity:0.6;text-shadow:0 0 30px #000;}
+}
+
+/* ===== Inputs ===== */
+.input-box{
+position:relative;
+margin-bottom:30px;
+}
+.input-box input{
+width:100%;
+padding:10px 35px 10px 0;
+font-size:16px;
+color:#fff;
+background:transparent;
+border:none;
+border-bottom:2px solid #010101;
+outline:none;
+}
+.input-box label{
+position:absolute;
+top:10px;
+left:0;
+color:#aaa;
+pointer-events:none;
+transition:0.5s;
+}
+
+.input-box input:focus~label,
+.input-box input:valid~label{
+top:-15px;
+font-size:12px;
+color:#0080ff;
+}
+
+/* ===== Eye toggle ===== */
+.eye-toggle{
+position:absolute;
+top:8px;
+right:0;
+width:25px;
+height:25px;
+cursor:pointer;
+fill:#aaa;
+transition:fill 0.3s ease;
+}
+.eye-toggle:hover{
+fill:#0080ff;
+}
+
+/* ===== BUTTON ===== */
+.btn-container{
+position:relative;
+width:100%;
+margin-top:20px;
+border-radius:30px;
+overflow:hidden;
+}
+
+.btn-container::before{
+content:"";
+position:absolute;
+inset:-2px;
+background:conic-gradient(#00aaff 0deg,#00aaff 360deg);
+animation:rotate 6s linear infinite;
+}
+
+.btn-container::after{
+content:"";
+position:absolute;
+inset:3px;
+background:#0d0d0d;
+border-radius:30px;
+}
+
+@keyframes rotate{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
+
+.btn-container button{
+width:100%;
+padding:14px 12px;
+background:transparent;
+color:#00aaff;
+font-weight:bold;
+font-size:16px;
+border:none;
+border-radius:30px;
+cursor:pointer;
+position:relative;
+z-index:1;
+transition:all 0.3s ease;
+}
+
+.btn-container button:hover{
+background:#00aaff;
+color:#000;
+box-shadow:0 0 20px #00aaff;
+}
+
+/* ============================================================
+   LOADING SCREEN — shows after successful login
+   ============================================================ */
+#loadingScreen {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: #0d0d0d;
+    overflow: hidden;
+}
+
+#loadingScreen.show {
+    display: flex;
+    animation: fadeInScreen 0.6s ease forwards;
+}
+
+@keyframes fadeInScreen {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Background image — the one you provided */
+#loadingScreen .bg {
+    position: absolute;
+    inset: 0;
+    background-image: url('loading.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 1;
+    animation: slowZoom 14s ease-in-out infinite alternate;
+}
+
+@keyframes slowZoom {
+    from { transform: scale(1); }
+    to   { transform: scale(1.08); }
+}
+
+/* Soft purple overlay for extra readability on the text */
+#loadingScreen .overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(120, 60, 220, 0.10),
+        rgba(80, 40, 180, 0.05),
+        rgba(120, 60, 220, 0.15)
+    );
+    z-index: 2;
+}
+
+/* Floating sparkle particles */
+#loadingScreen .sparkles {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+#loadingScreen .sparkles span {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 50%;
+    box-shadow: 0 0 12px rgba(200, 160, 255, 0.9);
+    animation: floatUp 8s linear infinite;
+    opacity: 0;
+}
+
+#loadingScreen .sparkles span:nth-child(1)  { left: 8%;  animation-delay: 0s;    animation-duration: 7s;  }
+#loadingScreen .sparkles span:nth-child(2)  { left: 18%; animation-delay: 1.2s;  animation-duration: 9s;  }
+#loadingScreen .sparkles span:nth-child(3)  { left: 28%; animation-delay: 2.4s;  animation-duration: 8s;  }
+#loadingScreen .sparkles span:nth-child(4)  { left: 38%; animation-delay: 0.6s;  animation-duration: 10s; }
+#loadingScreen .sparkles span:nth-child(5)  { left: 48%; animation-delay: 3s;    animation-duration: 7.5s;}
+#loadingScreen .sparkles span:nth-child(6)  { left: 58%; animation-delay: 1.8s;  animation-duration: 9.5s;}
+#loadingScreen .sparkles span:nth-child(7)  { left: 68%; animation-delay: 0.4s;  animation-duration: 8.5s;}
+#loadingScreen .sparkles span:nth-child(8)  { left: 78%; animation-delay: 2.6s;  animation-duration: 7.2s;}
+#loadingScreen .sparkles span:nth-child(9)  { left: 88%; animation-delay: 3.4s;  animation-duration: 9.2s;}
+#loadingScreen .sparkles span:nth-child(10) { left: 93%; animation-delay: 1.5s;  animation-duration: 8.8s;}
+#loadingScreen .sparkles span:nth-child(11) { left: 13%; animation-delay: 4.2s;  animation-duration: 7.7s;}
+#loadingScreen .sparkles span:nth-child(12) { left: 43%; animation-delay: 4.8s;  animation-duration: 8.3s;}
+
+@keyframes floatUp {
+    0%   { transform: translateY(100vh) scale(0.4); opacity: 0; }
+    15%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { transform: translateY(-40px) scale(1); opacity: 0; }
+}
+
+/* Content container */
+#loadingScreen .content {
+    position: relative;
+    z-index: 4;
+    text-align: center;
+    padding: 20px;
+    width: 100%;
+    max-width: 720px;
+}
+
+/* Animated title — each letter moves independently */
+#loadingScreen .animated-title {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-style: italic;
+    font-size: clamp(48px, 9vw, 96px);
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0;
+    line-height: 1.1;
+    filter: drop-shadow(0 4px 20px rgba(90, 40, 180, 0.55));
+}
+
+#loadingScreen .animated-title span {
+    display: inline-block;
+    color: #ffffff;
+    text-shadow:
+        0 0 12px rgba(160, 100, 255, 0.9),
+        0 0 25px rgba(120, 60, 220, 0.7),
+        0 3px 8px rgba(0, 0, 0, 0.35);
+    animation: letterWave 2.4s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 0.12s);
+}
+
+@keyframes letterWave {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg) scale(1);
+        opacity: 1;
+    }
+    25% {
+        transform: translateY(-14px) rotate(-3deg) scale(1.06);
+        opacity: 0.95;
+    }
+    50% {
+        transform: translateY(0) rotate(0deg) scale(1);
+        opacity: 1;
+    }
+    75% {
+        transform: translateY(6px) rotate(3deg) scale(0.98);
+        opacity: 0.9;
+    }
+}
+
+#loadingScreen .subtitle {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: clamp(18px, 3.2vw, 34px);
+    letter-spacing: 0.45em;
+    color: #ffffff;
+    margin: 6px 0 0 0;
+    font-weight: 400;
+    text-shadow: 0 0 14px rgba(160, 100, 255, 0.85);
+    animation: subtitleFade 3s ease-in-out infinite;
+}
+
+@keyframes subtitleFade {
+    0%, 100% { opacity: 1; letter-spacing: 0.45em; }
+    50%      { opacity: 0.75; letter-spacing: 0.55em; }
+}
+
+#loadingScreen .tagline {
+    font-family: Arial, sans-serif;
+    font-size: clamp(11px, 1.4vw, 15px);
+    letter-spacing: 0.35em;
+    color: #f0e6ff;
+    margin: 10px 0 0 0;
+    font-weight: 500;
+    text-shadow: 0 0 10px rgba(160, 100, 255, 0.75);
+}
+
+#loadingScreen .progress-wrap {
+    position: relative;
+    width: min(420px, 80%);
+    height: 12px;
+    margin: 40px auto 0;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+    overflow: hidden;
+    box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(120, 60, 220, 0.5);
+}
+
+#loadingScreen .progress-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #7b3fe4, #a566ff, #7b3fe4);
+    background-size: 200% 100%;
+    border-radius: 999px;
+    animation:
+        progressGrow 3s ease-out forwards,
+        shimmer 1.5s linear infinite;
+    box-shadow: 0 0 16px rgba(165, 102, 255, 0.9);
+}
+
+@keyframes progressGrow {
+    from { width: 0%; }
+    to   { width: 100%; }
+}
+
+@keyframes shimmer {
+    0%   { background-position: 0% 0%; }
+    100% { background-position: 200% 0%; }
+}
+
+#loadingScreen .loading-label {
+    margin-top: 18px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.35em;
+    color: #ffffff;
+    font-weight: 600;
+    text-shadow: 0 0 12px rgba(160, 100, 255, 0.9);
+    animation: dotBlink 1.4s infinite;
+}
+
+@keyframes dotBlink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+}
+
+#loadingScreen .loading-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+#loadingScreen .loading-dots span {
+    width: 10px;
+    height: 10px;
+    background: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 12px rgba(165, 102, 255, 0.9);
+    animation: dotBounce 1.4s infinite ease-in-out;
+}
+
+#loadingScreen .loading-dots span:nth-child(1) { animation-delay: 0s; }
+#loadingScreen .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+#loadingScreen .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes dotBounce {
+    0%, 100% { transform: translateY(0);    opacity: 0.6; }
+    50%      { transform: translateY(-10px); opacity: 1; }
+}
+
+#loadingScreen .footer-tag {
+    margin-top: 26px;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-style: italic;
+    font-size: clamp(13px, 1.6vw, 18px);
+    letter-spacing: 0.12em;
+    color: #f3ecff;
+    text-shadow: 0 0 12px rgba(120, 60, 220, 0.8);
+}
+
+#loadingScreen .footer-tag .sep {
+    display: inline-block;
+    margin: 0 10px;
+    color: #a566ff;
+    font-style: normal;
+}
+
+@media (max-width: 480px) {
+    #loadingScreen .progress-wrap { margin-top: 28px; height: 10px; }
+    #loadingScreen .subtitle      { letter-spacing: 0.3em; }
+    #loadingScreen .footer-tag    { margin-top: 18px; }
+}
+
+/* ============================================================
+   WELCOME ADMIN VOICE BANNER
+   ============================================================ */
+#welcomeBanner {
+    position: fixed;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    z-index: 9999999;
+    background: linear-gradient(135deg, #7b3fe4, #a566ff);
+    color: #ffffff;
+    padding: 14px 30px;
+    border-radius: 999px;
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    box-shadow:
+        0 0 30px rgba(165, 102, 255, 0.9),
+        inset 0 0 20px rgba(255, 255, 255, 0.15);
+    opacity: 0;
+    transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+}
+
+#welcomeBanner.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+#welcomeBanner .wave {
+    display: inline-block;
+    animation: waveHand 0.6s ease-in-out infinite alternate;
+    transform-origin: 70% 70%;
+    margin-left: 8px;
+}
+
+@keyframes waveHand {
+    from { transform: rotate(-15deg); }
+    to   { transform: rotate(15deg);  }
+}
+
 </style>
 </head>
 
 <body>
 
+<!-- VIDEO BACKGROUND -->
 <video autoplay muted loop id="bgVideo">
 <source src="parking.mp4" type="video/mp4">
 </video>
 
 <div class="login-box">
-<div class="logo"><img src="logo.jpg"></div>
+
+<div class="logo">
+<img src="logo.jpg">
+</div>
+
 <h2>ADMIN LOGIN</h2>
 
 <form id="loginForm" onsubmit="event.preventDefault(); loginAdmin();">
+
 <div class="input-box">
 <input type="text" id="username" required>
 <label>USERNAME</label>
 </div>
+
 <div class="input-box">
 <input type="password" id="password" required>
 <label>PASSWORD</label>
+
 <svg id="togglePassword" class="eye-toggle" viewBox="0 0 24 24">
-<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z"/>
+    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z"/>
 </svg>
+
 </div>
+
 <div class="btn-container">
 <button type="submit" id="loginBtn">LOGIN</button>
 </div>
+
 </form>
+
 </div>
 
+<!-- ============================================================
+     WELCOME ADMIN BANNER
+     ============================================================ -->
 <div id="welcomeBanner">
-<span>Welcome, Admin</span>
-<span class="wave">👋</span>
+    <span>Welcome, Admin</span>
+    <span class="wave">👋</span>
 </div>
 
+<!-- ============================================================
+     LOADING SCREEN
+     ============================================================ -->
 <div id="loadingScreen">
-<div class="bg"></div>
-<div class="overlay"></div>
-<div class="sparkles">
-<span></span><span></span><span></span>
-<span></span><span></span><span></span>
-<span></span><span></span><span></span>
-<span></span><span></span><span></span>
-</div>
-<div class="content">
-<h1 class="animated-title" id="animatedTitle"></h1>
-<p class="subtitle">GARDEN RESORT</p>
-<p class="tagline">RESORT BOOKING SYSTEM</p>
-<div class="progress-wrap"><div class="progress-fill"></div></div>
-<p class="loading-label">LOADING</p>
-<div class="loading-dots"><span></span><span></span><span></span></div>
-<p class="footer-tag">Relax <span class="sep">•</span> Unwind <span class="sep">•</span> Book Your Stay</p>
-</div>
+    <div class="bg"></div>
+    <div class="overlay"></div>
+
+    <!-- floating sparkles -->
+    <div class="sparkles">
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+    </div>
+
+    <div class="content">
+
+        <h1 class="animated-title" id="animatedTitle"></h1>
+
+        <p class="subtitle">GARDEN RESORT</p>
+
+        <p class="tagline">RESORT BOOKING SYSTEM</p>
+
+        <div class="progress-wrap">
+            <div class="progress-fill"></div>
+        </div>
+
+        <p class="loading-label">LOADING</p>
+
+        <div class="loading-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <p class="footer-tag">
+            Relax <span class="sep">•</span>
+            Unwind <span class="sep">•</span>
+            Book Your Stay
+        </p>
+
+    </div>
 </div>
 
 <script>
@@ -135,10 +595,15 @@ body{margin:0;min-height:100vh;display:flex;justify-content:center;align-items:c
    ============================================================ */
 const API_BASE = 'https://mybooking.free.nf/api';
 
+/* ============================================================
+   Animated title — build "Agua frio" letter by letter
+   ============================================================ */
 (function buildAnimatedTitle() {
     const titleEl = document.getElementById('animatedTitle');
     if (!titleEl) return;
+
     const text = 'Agua frio';
+
     for (let i = 0; i < text.length; i++) {
         const ch = text[i];
         const span = document.createElement('span');
@@ -148,12 +613,18 @@ const API_BASE = 'https://mybooking.free.nf/api';
     }
 })();
 
+/* ============================================================
+   SOUND EFFECTS (Web Audio API + Speech Synthesis)
+   ============================================================ */
 let audioCtx = null;
 
 function getAudioContext() {
     if (!audioCtx) {
-        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-        catch (e) { audioCtx = null; }
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            audioCtx = null;
+        }
     }
     return audioCtx;
 }
@@ -161,15 +632,19 @@ function getAudioContext() {
 function whooshSound() {
     const ctx = getAudioContext();
     if (!ctx) return;
+
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
+
     osc.type = 'sine';
     osc.frequency.setValueAtTime(320, now);
     osc.frequency.exponentialRampToValueAtTime(880, now + 0.5);
+
     gain.gain.setValueAtTime(0.0001, now);
     gain.gain.exponentialRampToValueAtTime(0.25, now + 0.05);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+
     osc.connect(gain).connect(ctx.destination);
     osc.start(now);
     osc.stop(now + 0.85);
@@ -178,14 +653,18 @@ function whooshSound() {
 function dingSound() {
     const ctx = getAudioContext();
     if (!ctx) return;
+
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
+
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(1200, now);
+
     gain.gain.setValueAtTime(0.0001, now);
     gain.gain.exponentialRampToValueAtTime(0.3, now + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.7);
+
     osc.connect(gain).connect(ctx.destination);
     osc.start(now);
     osc.stop(now + 0.75);
@@ -193,27 +672,38 @@ function dingSound() {
 
 function speakWelcome() {
     if (!('speechSynthesis' in window)) return;
+
     window.speechSynthesis.cancel();
+
     const utter = new SpeechSynthesisUtterance('Welcome Admin');
-    utter.rate = 0.95; utter.pitch = 1.05; utter.volume = 1.0;
+    utter.rate  = 0.95;
+    utter.pitch = 1.05;
+    utter.volume = 1.0;
+
     const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find(v => /en(-|_)(US|GB|PH)/i.test(v.lang) && /female|zira|samantha|google/i.test(v.name)) || voices.find(v => /^en/i.test(v.lang));
+    const preferred = voices.find(v =>
+        /en(-|_)(US|GB|PH)/i.test(v.lang) && /female|zira|samantha|google/i.test(v.name)
+    ) || voices.find(v => /^en/i.test(v.lang));
+
     if (preferred) utter.voice = preferred;
+
     window.speechSynthesis.speak(utter);
 }
 
 if ('speechSynthesis' in window) {
-    window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+    window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+    };
 }
 
 /* ============================================================
-   LOGIN HANDLER — calls InfinityFree API
+   LOGIN HANDLER — calls the InfinityFree API
    ============================================================ */
 async function loginAdmin() {
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value.trim();
 
-    if (!username || !password) {
+    if(!username || !password){
         alert("Please enter both username and password");
         return;
     }
@@ -222,45 +712,59 @@ async function loginAdmin() {
     loginBtn.textContent = 'LOGGING IN...';
     loginBtn.disabled = true;
 
-    try {
+    try{
         const response = await fetch(`${API_BASE}/login.php`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password })
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({username,password})
         });
 
         const rawText = await response.text();
-        console.log("HTTP:", response.status, "BODY:", rawText);
+        console.log("HTTP STATUS:", response.status);
+        console.log("RAW RESPONSE:", rawText);
 
         let result;
         try {
             result = JSON.parse(rawText);
-        } catch (e) {
-            alert("API returned non-JSON (status " + response.status + "):\n\n" + rawText.substring(0, 600));
+        } catch (parseErr) {
+            alert("Server returned non-JSON (status " + response.status + "):\n\n" + rawText.substring(0, 600));
             loginBtn.textContent = 'LOGIN';
             loginBtn.disabled = false;
             return;
         }
 
-        if (result.status === "success") {
+        if(result.status === "success"){
+
+            // Save session locally (since PHP sessions don't carry across domains)
             localStorage.setItem('admin_username', result.username);
             localStorage.setItem('admin_id', result.admin_id);
 
-            document.getElementById('loadingScreen').classList.add('show');
+            const loader = document.getElementById('loadingScreen');
+            loader.classList.add('show');
             document.title = 'Loading... Agua Frio Garden Resort';
+
             whooshSound();
-            document.getElementById('welcomeBanner').classList.add('show');
+
+            const banner = document.getElementById('welcomeBanner');
+            banner.classList.add('show');
+
             speakWelcome();
+
             setTimeout(() => { dingSound(); }, 2400);
-            setTimeout(() => { window.location.href = "admin.html"; }, 3200);
-        } else {
+
+            setTimeout(() => {
+                window.location.href = "admin.html";
+            }, 3200);
+
+        }else{
             alert("Login failed: " + (result.message || "Unknown error"));
             loginBtn.textContent = 'LOGIN';
             loginBtn.disabled = false;
         }
-
-    } catch (error) {
-        console.error(error);
+    }catch(error){
+        console.error("FETCH ERROR:", error);
         alert("Fetch failed: " + error.message);
         loginBtn.textContent = 'LOGIN';
         loginBtn.disabled = false;
@@ -268,15 +772,20 @@ async function loginAdmin() {
 }
 </script>
 
+<!-- ============================================================
+     PASSWORD EYE TOGGLE
+     ============================================================ -->
 <script>
 (function(){
     const toggle = document.getElementById('togglePassword');
     const pwd    = document.getElementById('password');
     let visible  = false;
+
     if (toggle && pwd) {
         toggle.addEventListener('click', function(){
             visible = !visible;
             pwd.type = visible ? 'text' : 'password';
+
             this.innerHTML = visible
                 ? '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12a4.5 4.5 0 110-9 4.5 4.5 0 010 9zm0-7a2.5 2.5 0 100 5 2.5 2.5 0 000-5z"/>'
                 : '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z"/>';
