@@ -591,6 +591,11 @@ box-shadow:0 0 20px #00aaff;
 
 <script>
 /* ============================================================
+   API BASE URL
+   ============================================================ */
+const API_BASE = 'https://mybooking.free.nf/api';
+
+/* ============================================================
    Animated title — build "Agua frio" letter by letter
    ============================================================ */
 (function buildAnimatedTitle() {
@@ -708,7 +713,7 @@ async function loginAdmin() {
     loginBtn.disabled = true;
 
     try{
-        const response = await fetch("login.php",{
+        const response = await fetch(`${API_BASE}/login.php`,{
             method:"POST",
             headers:{
                 "Content-Type":"application/json"
