@@ -1,0 +1,4136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<meta name="format-detection" content="telephone=no">
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+<title>Smart Parking Management System</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+/* =========================================================
+   BASE / RESET
+========================================================= */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --primary: #7c3aed;
+    --primary-dark: #5b21b6;
+    --secondary: #06b6d4;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --background: #f5f7fb;
+    --card: #ffffff;
+    --text: #172033;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --sidebar: #111827;
+    --sidebar-hover: #1f2937;
+    --sidebar-width: 265px;
+}
+
+html, body {
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at top right, rgba(124,58,237,.12), transparent 30%),
+        var(--background);
+    color: var(--text);
+    transition: .3s ease;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+body.dark-mode {
+    --background: #0b1020;
+    --card: #151b2e;
+    --text: #f3f4f6;
+    --muted: #a1a1aa;
+    --border: #283149;
+    background:
+        radial-gradient(circle at top right, rgba(124,58,237,.20), transparent 30%),
+        #0b1020;
+}
+
+/* =========================================================
+   DATA PROTECTION / ANTI-INSPECT
+========================================================= */
+
+body.devtools-detected .main-content,
+body.devtools-detected .sidebar {
+    filter: blur(14px) !important;
+    pointer-events: none !important;
+    user-select: none !important;
+}
+
+body.devtools-detected::after {
+    content: "⛔  DEVELOPER TOOLS DETECTED  ⛔\A\A Content hidden for security.\A Please close DevTools to continue.";
+    white-space: pre-wrap;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, #0b1020 0%, #1a0b2e 100%);
+    color: #ef4444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 800;
+    z-index: 2147483647;
+    text-align: center;
+    padding: 40px;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 1px;
+    line-height: 1.7;
+}
+
+.no-select,
+.data-table,
+.receipt-modal,
+.slot-card,
+.booking-detail-card,
+.day-details,
+.qr-result-box,
+.online-booking-card {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+input, textarea, select {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
+}
+
+@media print {
+    body.print-protect .main-content,
+    body.print-protect .sidebar {
+        display: none !important;
+    }
+}
+
+/* SIDEBAR OVERLAY FOR MOBILE */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    z-index: 999;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+.sidebar-overlay.show { display: block; }
+
+/* SIDEBAR */
+.sidebar {
+    position: fixed; left: 0; top: 0;
+    width: var(--sidebar-width); height: 100vh;
+    padding: 25px 15px;
+    background: linear-gradient(180deg, #111827 0%, #17133a 100%);
+    color: white; z-index: 1000;
+    box-shadow: 8px 0 30px rgba(0,0,0,.15);
+    overflow-y: auto;
+    transition: transform .3s ease;
+    -webkit-overflow-scrolling: touch;
+}
+
+.sidebar-header {
+    text-align: center; padding: 10px 15px 25px;
+    border-bottom: 1px solid rgba(255,255,255,.10);
+    margin-bottom: 20px;
+}
+
+/* LOGO — now shows logo.jpg */
+.parking-logo {
+    width: 68px; height: 68px; margin: auto;
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    box-shadow: 0 12px 30px rgba(124,58,237,.35);
+    overflow: hidden;
+    padding: 4px;
+}
+
+.parking-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 16px;
+    display: block;
+    background: #ffffff;
+}
+
+.sidebar-header h2 {
+    margin-top: 14px;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.3;
+    word-break: break-word;
+}
+.sidebar-header p { color: #aeb7c9; font-size: 11px; margin-top: 5px; }
+
+.sidebar-menu { list-style: none; }
+.sidebar-menu li { margin: 7px 0; border-radius: 14px; }
+.sidebar-menu li a {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px; color: #dbe4f0;
+    text-decoration: none; font-size: 14px;
+    font-weight: 600; border-radius: 14px; transition: .25s ease;
+    position: relative;
+}
+.sidebar-menu li a i { width: 22px; text-align: center; font-size: 17px; flex-shrink: 0; }
+.sidebar-menu li:hover a { background: var(--sidebar-hover); color: white; transform: translateX(3px); }
+.sidebar-menu li.active a {
+    background: linear-gradient(135deg, var(--primary), #8b5cf6);
+    color: white; box-shadow: 0 8px 20px rgba(124,58,237,.30);
+}
+.logout-item {
+    margin-top: 35px !important; padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,.10);
+}
+
+/* Pending badge on the Online Bookings menu item */
+.menu-badge {
+    margin-left: auto;
+    background: var(--danger);
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 800;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    padding: 0 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    box-shadow: 0 4px 10px rgba(239,68,68,.4);
+}
+.menu-badge.hidden { display: none; }
+
+/* MAIN */
+.main-content {
+    margin-left: var(--sidebar-width);
+    padding: 25px;
+    min-height: 100vh;
+    transition: margin-left .3s ease;
+}
+
+/* TOP BAR */
+.top-bar {
+    background: rgba(255,255,255,.90);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,.8);
+    border-radius: 22px;
+    padding: 18px 22px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    box-shadow: 0 10px 35px rgba(15,23,42,.07);
+}
+body.dark-mode .top-bar { background: rgba(21,27,46,.90); border-color: #283149; }
+.page-title h1 { font-size: 22px; font-weight: 800; letter-spacing: -.5px; }
+.page-title p { color: var(--muted); font-size: 12px; margin-top: 3px; }
+.header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.ph-clock {
+    padding: 10px 14px; border-radius: 13px;
+    background: rgba(124,58,237,.08);
+    color: var(--primary); font-size: 12px;
+    font-weight: 700; white-space: nowrap;
+}
+.timer-area {
+    padding: 10px 14px; border-radius: 13px;
+    background: var(--background);
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12px; font-weight: 600;
+    white-space: nowrap;
+}
+.timer-value { font-family: monospace; color: var(--primary); font-size: 13px; }
+.dark-mode-toggle {
+    width: 42px; height: 42px; border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--background); cursor: pointer;
+    color: var(--primary); transition: .25s;
+    flex-shrink: 0;
+    border: none;
+}
+.dark-mode-toggle:hover { transform: translateY(-2px); }
+
+/* CONTENT */
+.section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 25px;
+    box-shadow: 0 12px 35px rgba(15,23,42,.06);
+}
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+}
+.section-header h2 { font-size: 18px; font-weight: 800; }
+.section-header h2 i { color: var(--primary); margin-right: 8px; }
+.section-header p { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+/* PAGE SYSTEM */
+.page { display: none; }
+.page.active { display: block; animation: fadeIn .25s ease; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* DASHBOARD */
+.income-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px; margin-bottom: 20px;
+}
+.income-summary-item {
+    position: relative; overflow: hidden;
+    padding: 20px; border-radius: 18px;
+    background: linear-gradient(135deg, rgba(124,58,237,.10), rgba(6,182,212,.07));
+    border: 1px solid rgba(124,58,237,.12);
+}
+.income-summary-item:nth-child(2) {
+    background: linear-gradient(135deg, rgba(16,185,129,.10), rgba(6,182,212,.07));
+    border-color: rgba(16,185,129,.12);
+}
+.income-summary-item .label {
+    display: block; color: var(--muted);
+    font-size: 11px; font-weight: 600; margin-bottom: 7px;
+}
+.income-summary-item .value {
+    display: block; font-size: 22px; font-weight: 800;
+    word-break: break-word;
+}
+
+.small-icon {
+    position: absolute; right: 18px; top: 18px;
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(124,58,237,.12); color: var(--primary);
+}
+
+.chart-year-selector {
+    display: flex; align-items: center; gap: 9px;
+    color: var(--muted); font-size: 13px; font-weight: 600;
+}
+.chart-year-selector select {
+    min-width: 100px; padding: 10px 13px;
+    border: 1px solid var(--border); border-radius: 11px;
+    background: var(--card); color: var(--text);
+    outline: none; font-weight: 700; font-family: inherit;
+}
+.chart-container {
+    position: relative; height: 390px;
+    border-radius: 20px; padding: 15px;
+    background: var(--background);
+    border: 1px solid var(--border);
+}
+#incomeChart { width: 100% !important; height: 100% !important; }
+
+.online-status {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 12px; border-radius: 999px;
+    background: rgba(16,185,129,.10);
+    color: #059669; font-size: 11px; font-weight: 800;
+}
+.online-status.offline {
+    background: rgba(239,68,68,.10);
+    color: #dc2626;
+}
+.online-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: currentColor;
+}
+
+.offline-message {
+    position: absolute; inset: 0;
+    display: none; align-items: center;
+    justify-content: center; flex-direction: column;
+    text-align: center; padding: 30px;
+    background: var(--background);
+    border-radius: 20px; z-index: 5;
+}
+.offline-message.show { display: flex; }
+.offline-icon {
+    width: 65px; height: 65px; border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(239,68,68,.10); color: var(--danger);
+    font-size: 28px; margin-bottom: 15px;
+}
+.last-updated {
+    margin-top: 12px; text-align: right;
+    color: var(--muted); font-size: 11px;
+}
+
+/* =========================================================
+   TABLE — RESPONSIVE
+========================================================= */
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+.data-table th {
+    text-align: left; padding: 14px;
+    background: rgba(124,58,237,.08);
+    color: var(--text); font-size: 12px; white-space: nowrap;
+}
+.data-table td {
+    padding: 14px; border-bottom: 1px solid var(--border);
+    font-size: 13px; vertical-align: middle;
+}
+.data-table tr:hover td { background: rgba(124,58,237,.035); }
+
+@media (max-width: 768px) {
+    .data-table.responsive-table {
+        min-width: 100%;
+    }
+    .data-table.responsive-table thead {
+        display: none;
+    }
+    .data-table.responsive-table tbody,
+    .data-table.responsive-table tr,
+    .data-table.responsive-table td {
+        display: block;
+        width: 100%;
+    }
+    .data-table.responsive-table tr {
+        background: var(--background);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        margin-bottom: 12px;
+        padding: 12px;
+    }
+    .data-table.responsive-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 8px 4px;
+        border-bottom: 1px dashed var(--border);
+        font-size: 12px;
+        text-align: right;
+    }
+    .data-table.responsive-table td:last-child {
+        border-bottom: none;
+    }
+    .data-table.responsive-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--muted);
+        text-align: left;
+        flex-shrink: 0;
+        font-size: 11px;
+    }
+}
+
+.status {
+    display: inline-flex; padding: 6px 10px;
+    border-radius: 999px; font-size: 10px;
+    font-weight: 800; text-transform: uppercase;
+    white-space: nowrap;
+}
+.status.pending { background: rgba(245,158,11,.12); color: #d97706; }
+.status.approved { background: rgba(16,185,129,.12); color: #059669; }
+.status.cancelled { background: rgba(239,68,68,.12); color: #dc2626; }
+.status.completed { background: rgba(107,114,128,.12); color: #6b7280; }
+.status.available { background: rgba(16,185,129,.12); color: #059669; }
+.status.occupied { background: rgba(239,68,68,.12); color: #dc2626; }
+.status.maintenance { background: rgba(245,158,11,.12); color: #d97706; }
+
+/* BUTTONS */
+.btn {
+    border: none; border-radius: 11px;
+    padding: 11px 16px; cursor: pointer;
+    font-family: inherit; font-weight: 700;
+    font-size: 12px; transition: .2s;
+    display: inline-flex; align-items: center;
+    justify-content: center; gap: 6px;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), #8b5cf6);
+    color: white;
+}
+.btn-success { background: var(--success); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-secondary {
+    background: var(--background); color: var(--text);
+    border: 1px solid var(--border);
+}
+.btn-sm { padding: 8px 12px; font-size: 11px; }
+
+/* =========================================================
+   ONLINE BOOKINGS PAGE — CARDS
+========================================================= */
+
+.online-bookings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 18px;
+}
+
+.online-booking-card {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: .25s ease;
+}
+.online-booking-card::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 5px;
+    background: var(--warning);
+}
+.online-booking-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(15,23,42,.08);
+}
+
+.online-booking-card .booking-id {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: .04em;
+}
+
+.online-booking-card h4 {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    word-break: break-word;
+}
+
+.online-booking-card .info-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 12px;
+}
+.online-booking-card .info-row:last-of-type { border-bottom: none; }
+.online-booking-card .info-row span:first-child { color: var(--muted); flex-shrink: 0; }
+.online-booking-card .info-row span:last-child {
+    font-weight: 700;
+    text-align: right;
+    word-break: break-word;
+}
+
+.online-booking-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+.online-booking-actions .btn {
+    flex: 1;
+}
+
+.online-booking-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 50px 20px;
+    background: var(--background);
+    border: 1px dashed var(--border);
+    border-radius: 18px;
+    color: var(--muted);
+}
+.online-booking-empty i {
+    font-size: 42px;
+    margin-bottom: 12px;
+    color: var(--success);
+    opacity: .7;
+}
+.online-booking-empty h3 {
+    color: var(--text);
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
+.pending-count-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(245,158,11,.12);
+    color: #d97706;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+/* BOOKING FORM */
+.booking-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 20px;
+}
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+.form-group { display: flex; flex-direction: column; gap: 7px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label { font-size: 12px; font-weight: 700; color: var(--text); }
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%; padding: 12px 13px;
+    border: 1px solid var(--border); border-radius: 11px;
+    background: var(--card); color: var(--text);
+    outline: none; font-family: inherit; font-size: 13px;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124,58,237,.10);
+}
+.form-actions { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* BOOKING SUMMARY */
+.booking-summary {
+    background: linear-gradient(160deg, rgba(124,58,237,.10), rgba(6,182,212,.08));
+    border: 1px solid rgba(124,58,237,.12);
+    border-radius: 18px; padding: 20px;
+}
+.booking-summary h3 { font-size: 15px; margin-bottom: 15px; }
+.summary-line {
+    display: flex; justify-content: space-between;
+    gap: 10px; padding: 9px 0;
+    border-bottom: 1px solid rgba(124,58,237,.10);
+    font-size: 12px;
+}
+.summary-line span:first-child { color: var(--muted); }
+.summary-line span:last-child {
+    font-weight: 700; text-align: right;
+    word-break: break-word;
+}
+
+/* CALENDAR */
+.calendar-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 20px;
+}
+.calendar-box {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 20px; padding: 20px;
+}
+.calendar-header {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 18px;
+    gap: 10px; flex-wrap: wrap;
+}
+.calendar-header h3 { font-size: 16px; font-weight: 800; }
+.calendar-nav { display: flex; gap: 7px; }
+.calendar-nav button {
+    width: 36px; height: 36px; border: none;
+    border-radius: 10px; cursor: pointer;
+    background: var(--card); color: var(--text);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+}
+.calendar-nav button:hover { background: var(--primary); color: white; }
+.calendar-weekdays,
+.calendar-days {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+.calendar-weekdays div {
+    text-align: center; font-size: 10px;
+    color: var(--muted); font-weight: 800;
+    padding: 8px 0;
+}
+.calendar-day {
+    min-height: 68px; padding: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 11px; cursor: pointer;
+    position: relative; transition: .2s;
+}
+.calendar-day:hover { border-color: var(--primary); transform: translateY(-2px); }
+.calendar-day.empty { background: transparent; border: none; cursor: default; }
+.calendar-day.today { border: 2px solid var(--primary); }
+.calendar-day.selected {
+    background: linear-gradient(135deg, rgba(124,58,237,.14), rgba(6,182,212,.10));
+    border-color: var(--primary);
+}
+.day-number { font-size: 12px; font-weight: 800; }
+.booking-count {
+    margin-top: 7px; display: inline-block;
+    background: var(--primary); color: white;
+    padding: 3px 6px; border-radius: 7px;
+    font-size: 9px; font-weight: 800;
+}
+.day-details {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 20px; padding: 20px;
+    max-height: 600px; overflow-y: auto;
+}
+.day-details h3 { font-size: 16px; margin-bottom: 5px; }
+.day-details-subtitle {
+    color: var(--muted); font-size: 11px;
+    margin-bottom: 15px;
+}
+.booking-detail-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 15px; padding: 15px;
+    margin-bottom: 12px;
+}
+.booking-detail-card:last-child { margin-bottom: 0; }
+.booking-detail-card h4 { font-size: 13px; margin-bottom: 10px; }
+.detail-row {
+    display: flex; justify-content: space-between;
+    gap: 10px; padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-row span:first-child { color: var(--muted); flex-shrink: 0; }
+.detail-row span:last-child {
+    font-weight: 700; text-align: right;
+    word-break: break-word;
+}
+
+/* PARKING CARDS */
+.slot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+}
+.slot-card {
+    padding: 20px; border-radius: 18px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    position: relative; overflow: hidden;
+}
+.slot-card::before {
+    content: ""; position: absolute;
+    left: 0; top: 0; bottom: 0; width: 5px;
+    background: var(--primary);
+}
+.slot-card.available::before { background: var(--success); }
+.slot-card.occupied::before { background: var(--danger); }
+.slot-card.maintenance::before { background: var(--warning); }
+.slot-number { font-size: 18px; font-weight: 800; margin-bottom: 10px; }
+.slot-name { color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+
+/* EMPTY */
+.empty-state {
+    text-align: center; padding: 45px 20px;
+    color: var(--muted);
+}
+.empty-state i { font-size: 40px; margin-bottom: 12px; opacity: .5; }
+.empty-state h3 { color: var(--text); font-size: 16px; margin-bottom: 5px; }
+
+/* ADD PARKING SLOT */
+.add-slot-panel { padding:20px; border-radius:20px; background:linear-gradient(145deg,rgba(124,58,237,.08),rgba(6,182,212,.06)); border:1px solid rgba(124,58,237,.16); }
+.add-slot-header { margin-bottom:18px; }
+.add-slot-header h3 { font-size:15px; font-weight:800; }
+.add-slot-header h3 i { color:var(--primary); margin-right:7px; }
+.add-slot-header p { color:var(--muted); font-size:11px; margin-top:5px; }
+.add-slot-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.add-slot-panel textarea { resize:vertical; min-height:100px; }
+.field-hint { color:var(--muted); font-size:10px; }
+#guest_contact.input-invalid { border-color:var(--danger); box-shadow:0 0 0 3px rgba(239,68,68,.10); }
+#guest_contact.input-valid { border-color:var(--success); }
+.slot-image-preview-wrap { min-height:180px; border:1px dashed var(--border); border-radius:15px; background:var(--background); display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; color:var(--muted); font-size:12px; text-align:center; }
+.slot-image-preview { display:none; width:100%; max-height:280px; object-fit:cover; }
+.slot-card-image { width:100%; height:150px; object-fit:cover; border-radius:13px; margin-bottom:14px; border:1px solid var(--border); }
+.slot-location { color:var(--text); font-size:11px; font-weight:700; margin-bottom:7px; }
+.slot-details { color:var(--muted); font-size:11px; line-height:1.5; margin-bottom:12px; }
+
+/* SESSION */
+.session-warning {
+    position: fixed; bottom: 20px; right: 20px;
+    background: var(--danger); color: white;
+    padding: 14px 18px; border-radius: 15px;
+    display: none; align-items: center; gap: 15px;
+    z-index: 2000;
+    box-shadow: 0 12px 30px rgba(239,68,68,.30);
+    max-width: calc(100vw - 40px);
+}
+.session-warning.show { display: flex; }
+.extend-btn {
+    background: white; color: var(--danger);
+    border: none; padding: 7px 12px;
+    border-radius: 8px; cursor: pointer;
+    font-weight: 800; white-space: nowrap;
+}
+
+/* RECEIPT MODAL */
+.receipt-overlay {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: none; align-items: center;
+    justify-content: center; z-index: 3000;
+    padding: 20px;
+}
+.receipt-overlay.show { display: flex; }
+.receipt-modal {
+    background: var(--card);
+    border-radius: 24px;
+    max-width: 600px; width: 100%;
+    max-height: 90vh; overflow-y: auto;
+    padding: 35px; position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.receipt-modal .close-receipt {
+    position: absolute; top: 15px; right: 20px;
+    background: none; border: none;
+    font-size: 24px; cursor: pointer;
+    color: var(--muted); transition: .2s;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+}
+.receipt-modal .close-receipt:hover {
+    color: var(--text); transform: rotate(90deg);
+    background: var(--background);
+}
+.receipt-header {
+    text-align: center;
+    border-bottom: 2px dashed var(--border);
+    padding-bottom: 20px; margin-bottom: 20px;
+}
+.receipt-header h2 {
+    font-size: 22px; font-weight: 800;
+    color: var(--primary);
+}
+.receipt-header .ref-number {
+    font-size: 13px; color: var(--muted);
+    margin-top: 5px; font-weight: 600;
+    word-break: break-all;
+}
+.receipt-header .ref-number span {
+    color: var(--text); font-family: monospace;
+    font-size: 15px;
+}
+.receipt-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 20px;
+}
+.receipt-body .receipt-item {
+    display: flex; justify-content: space-between;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    gap: 10px;
+}
+.receipt-body .receipt-item.full { grid-column: 1 / -1; }
+.receipt-body .receipt-item .label { color: var(--muted); font-weight: 500; flex-shrink: 0; }
+.receipt-body .receipt-item .value {
+    font-weight: 700; text-align: right;
+    word-break: break-word;
+}
+.receipt-footer {
+    margin-top: 20px; padding-top: 20px;
+    border-top: 2px dashed var(--border);
+    text-align: center;
+}
+.receipt-footer .status-badge {
+    display: inline-block; padding: 8px 20px;
+    border-radius: 999px; font-weight: 800;
+    font-size: 13px;
+}
+.receipt-footer .status-badge.approved {
+    background: rgba(16,185,129,.15); color: #059669;
+}
+.receipt-footer .print-btn {
+    margin-top: 15px; padding: 10px 25px;
+    background: var(--primary); color: white;
+    border: none; border-radius: 11px;
+    cursor: pointer; font-weight: 700;
+    transition: .2s;
+}
+.receipt-footer .print-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(124,58,237,.3);
+}
+
+/* QR CODE IN RECEIPT */
+.receipt-qr-wrap {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 2px dashed var(--border);
+}
+
+.receipt-qr-wrap #receiptQrTarget {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.receipt-qr-wrap #receiptQrTarget canvas {
+    display: none !important;
+}
+
+.receipt-qr-wrap #receiptQrTarget img {
+    display: block !important;
+    margin: 0 auto !important;
+    background: #ffffff;
+    padding: 10px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    width: 200px !important;
+    height: 200px !important;
+}
+
+/* QR SCANNER */
+.qr-scan-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 20px;
+}
+.qr-scanner-box {
+    background: #000; border-radius: 20px;
+    overflow: hidden; min-height: 340px;
+    position: relative;
+}
+#qrReader { width: 100%; }
+.qr-result-box {
+    background: linear-gradient(160deg, rgba(124,58,237,.10), rgba(6,182,212,.08));
+    border: 1px solid rgba(124,58,237,.16);
+    border-radius: 20px; padding: 22px;
+}
+.qr-result-box h3 {
+    font-size: 15px; font-weight: 800;
+    margin-bottom: 12px;
+}
+.qr-result-box h3 i { color: var(--primary); margin-right: 8px; }
+.qr-result-line {
+    display: flex; justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(124,58,237,.15);
+    font-size: 12px;
+    gap: 10px;
+}
+.qr-result-line:last-child { border-bottom: none; }
+.qr-result-line span:first-child { color: var(--muted); flex-shrink: 0; }
+.qr-result-line span:last-child {
+    font-weight: 700; text-align: right;
+    word-break: break-word;
+}
+.qr-status-badge {
+    display: inline-block; padding: 6px 14px;
+    border-radius: 999px; font-weight: 800;
+    font-size: 11px; margin-top: 10px;
+    letter-spacing: .04em;
+}
+.qr-status-badge.success {
+    background: rgba(16,185,129,.15); color: #059669;
+}
+.qr-status-badge.error {
+    background: rgba(239,68,68,.15); color: #dc2626;
+}
+.qr-thumb {
+    background: #ffffff; padding: 4px;
+    border-radius: 8px; display: inline-block;
+    line-height: 0; border: 1px solid var(--border);
+}
+.qr-thumb img,
+.qr-thumb canvas {
+    display: block;
+    width: 70px !important;
+    height: 70px !important;
+}
+.qr-thumb canvas { display: none !important; }
+.qr-thumb img { display: block !important; }
+
+/* QR RELEASE CHOICE + REFERENCE NUMBER */
+.qr-choice-note {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding: 14px 18px;
+    border: 1px solid rgba(124,58,237,.18);
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(124,58,237,.10), rgba(6,182,212,.06));
+}
+.qr-choice-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(124,58,237,.12); color: var(--primary);
+    font-size: 19px; flex-shrink: 0;
+}
+.qr-choice-note strong { display: block; font-size: 13px; font-weight: 800; }
+.qr-choice-note span { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.reference-release-box {
+    padding: 15px;
+    border: 1px solid rgba(124,58,237,.15);
+    border-radius: 15px;
+    background: rgba(255,255,255,.65);
+}
+.reference-title { font-size: 12px; font-weight: 800; color: var(--primary); }
+.reference-title i { margin-right: 6px; }
+.reference-help { margin: 6px 0 12px; font-size: 11px; color: var(--muted); line-height: 1.5; }
+.reference-input-row { display: flex; gap: 8px; align-items: stretch; }
+.reference-input-row .form-control { flex: 1; min-width: 0; }
+.reference-input-row .btn { white-space: nowrap; }
+.or-divider { display: flex; align-items: center; gap: 10px; margin: 16px 0 0; color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .08em; }
+.or-divider::before, .or-divider::after { content: ''; height: 1px; flex: 1; background: rgba(124,58,237,.16); }
+
+/* ADMIN QUICK-ACCESS QR BLOCK */
+.admin-qr-block {
+    margin-top: 22px;
+    padding-top: 22px;
+    border-top: 2px dashed rgba(124,58,237,.20);
+    text-align: center;
+}
+.admin-qr-block h4 {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 6px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+.admin-qr-block p {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    line-height: 1.5;
+}
+.admin-qr-block #adminQuickQr {
+    display: inline-block;
+    background: #ffffff;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+}
+.admin-qr-block #adminQuickQr canvas,
+.admin-qr-block #adminQuickQr img {
+    display: block !important;
+    margin: 0 auto !important;
+}
+.admin-qr-block #adminQuickQr canvas {
+    display: none !important;
+}
+.admin-qr-block #adminQuickQr img {
+    display: block !important;
+    width: 160px !important;
+    height: 160px !important;
+}
+.admin-qr-block .admin-qr-url {
+    margin-top: 10px;
+    font-family: monospace;
+    font-size: 10px;
+    color: var(--muted);
+    word-break: break-all;
+    background: var(--background);
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+/* HAMBURGER */
+.hamburger {
+    display: none; border: 0;
+    background: none; cursor: pointer; padding: 5px;
+    width: 40px; height: 40px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    transition: background .2s;
+}
+.hamburger:hover { background: var(--background); }
+.hamburger span {
+    display: block; width: 24px; height: 3px;
+    margin: 4px 0; background: var(--text);
+    border-radius: 4px;
+    transition: .2s;
+}
+
+/* =========================================================
+   RESPONSIVE BREAKPOINTS
+========================================================= */
+
+@media (max-width: 1100px) {
+    .booking-layout,
+    .calendar-layout,
+    .qr-scan-layout { grid-template-columns: 1fr; }
+    .day-details { max-height: none; }
+}
+
+@media (max-width: 900px) {
+    .sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+    }
+    .sidebar.open { transform: translateX(0); }
+    .main-content {
+        margin-left: 0;
+        padding: 15px;
+    }
+    .hamburger { display: flex; }
+    .ph-clock { display: none; }
+    .top-bar {
+        padding: 14px 16px;
+        border-radius: 18px;
+    }
+    .page-title h1 { font-size: 19px; }
+    .page-title p { font-size: 11px; }
+    .section { padding: 18px; border-radius: 20px; }
+    .section-header h2 { font-size: 16px; }
+    .timer-area { padding: 8px 11px; font-size: 11px; }
+    .dark-mode-toggle { width: 38px; height: 38px; }
+}
+
+@media (max-width: 650px) {
+    body { font-size: 13px; }
+    .main-content { padding: 12px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.full { grid-column: auto; }
+    .income-summary { grid-template-columns: 1fr; }
+    .income-summary-item .value { font-size: 20px; }
+    .small-icon {
+        width: 34px; height: 34px; font-size: 14px;
+        right: 14px; top: 14px;
+    }
+    .chart-container { height: 280px; padding: 10px; }
+    .calendar-day {
+        min-height: 48px; padding: 5px;
+        border-radius: 8px;
+    }
+    .booking-count { font-size: 8px; padding: 2px 5px; }
+    .day-number { font-size: 11px; }
+    .calendar-box { padding: 12px; border-radius: 16px; }
+    .calendar-weekdays div { font-size: 9px; padding: 5px 0; }
+    .calendar-header h3 { font-size: 14px; }
+    .calendar-nav button { width: 32px; height: 32px; }
+    .section { padding: 15px; border-radius: 18px; }
+    .section-header { margin-bottom: 16px; }
+    .section-header h2 { font-size: 15px; }
+    .section-header p { font-size: 11px; }
+    .add-slot-grid { grid-template-columns: 1fr; }
+    .add-slot-panel { padding: 15px; }
+    .slot-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+    }
+    .slot-card { padding: 15px; border-radius: 14px; }
+    .slot-number { font-size: 16px; }
+    .slot-card-image { height: 120px; }
+    .receipt-modal {
+        padding: 20px; margin: 10px;
+        border-radius: 18px;
+    }
+    .receipt-body { grid-template-columns: 1fr; }
+    .receipt-header h2 { font-size: 19px; }
+    .receipt-qr-wrap #receiptQrTarget img {
+        width: 160px !important;
+        height: 160px !important;
+    }
+    .session-warning {
+        left: 15px; right: 15px; bottom: 15px;
+        flex-direction: column; align-items: stretch;
+        padding: 12px 14px;
+    }
+    .extend-btn { width: 100%; }
+    .btn { padding: 10px 14px; font-size: 12px; }
+    .form-actions { flex-direction: column; }
+    .form-actions .btn { width: 100%; }
+    .timer-area { padding: 7px 10px; font-size: 10px; }
+    .timer-value { font-size: 12px; }
+    .top-bar { gap: 10px; }
+    .page-title h1 { font-size: 17px; }
+    .page-title p { font-size: 10px; }
+    .qr-scanner-box { min-height: 260px; border-radius: 16px; }
+    .qr-result-box { padding: 16px; border-radius: 16px; }
+    .qr-result-line { font-size: 11px; }
+    .admin-qr-block #adminQuickQr img {
+        width: 130px !important;
+        height: 130px !important;
+    }
+    .admin-qr-block #adminQuickQr { padding: 10px; }
+    .booking-detail-card { padding: 12px; border-radius: 12px; }
+    .detail-row { font-size: 10px; padding: 5px 0; }
+    .day-details { padding: 15px; border-radius: 16px; }
+    .slot-image-preview-wrap { min-height: 140px; }
+    .online-bookings-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 400px) {
+    .main-content { padding: 10px; }
+    .section { padding: 12px; }
+    .page-title h1 { font-size: 15px; }
+    .page-title p { display: none; }
+    .header-actions { gap: 6px; }
+    .timer-area span:not(.timer-value) { display: none; }
+    .sidebar-header h2 { font-size: 15px; }
+    .sidebar-header p { font-size: 10px; }
+    .parking-logo { width: 56px; height: 56px; }
+    .income-summary-item .value { font-size: 18px; }
+    .slot-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .slot-card { padding: 12px; }
+    .slot-number { font-size: 14px; }
+    .calendar-day { min-height: 42px; }
+    .day-number { font-size: 10px; }
+    .booking-count { font-size: 7px; padding: 2px 4px; }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+    .sidebar { overflow-y: auto; }
+    .receipt-modal { max-height: 95vh; }
+}
+
+@media print {
+    .sidebar, .top-bar, .session-warning, .btn { display: none !important; }
+    .main-content { margin-left: 0; padding: 0; }
+}
+
+/* =========================================================
+   AGUA FRIO SETTINGS PAGE
+========================================================= */
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.settings-card {
+    background: linear-gradient(145deg, rgba(124,58,237,.08), rgba(255,255,255,.92));
+    border: 1px solid rgba(124,58,237,.16);
+    border-radius: 20px;
+    padding: 22px;
+    box-shadow: 0 10px 30px rgba(91,33,182,.06);
+}
+
+body.dark-mode .settings-card {
+    background: linear-gradient(145deg, rgba(124,58,237,.13), rgba(21,27,46,.95));
+    border-color: #283149;
+}
+
+.settings-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.settings-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: rgba(124,58,237,.12);
+    color: var(--primary);
+    font-size: 18px;
+}
+
+.settings-card-header h3 {
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.settings-card-header p {
+    color: var(--muted);
+    font-size: 11px;
+    margin-top: 3px;
+}
+
+.settings-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.settings-form-grid .form-group.full {
+    grid-column: 1 / -1;
+}
+
+.settings-note {
+    margin-top: 12px;
+    padding: 11px 13px;
+    border-radius: 12px;
+    background: rgba(124,58,237,.07);
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.settings-actions {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.resort-info-preview {
+    margin-top: 20px;
+    padding: 18px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #6d28d9, #9333ea);
+    color: #fff;
+    box-shadow: 0 12px 30px rgba(109,40,217,.22);
+}
+
+.resort-info-preview h4 {
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 23px;
+    margin-bottom: 7px;
+}
+
+.resort-info-preview p {
+    font-size: 11px;
+    line-height: 1.6;
+    opacity: .92;
+}
+
+.resort-info-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 16px;
+    margin-top: 13px;
+    font-size: 11px;
+}
+
+.resort-info-meta div {
+    display: flex;
+    gap: 7px;
+    align-items: flex-start;
+}
+
+.resort-info-meta i {
+    width: 15px;
+    margin-top: 2px;
+}
+
+@media (max-width: 800px) {
+    .settings-grid, .settings-form-grid, .resort-info-meta {
+        grid-template-columns: 1fr;
+    }
+    .settings-form-grid .form-group.full {
+        grid-column: auto;
+    }
+}
+
+</style>
+
+</head>
+
+<body class="protected-content">
+
+<!-- SIDEBAR OVERLAY FOR MOBILE -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+
+    <div class="sidebar-header">
+        <!-- LOGO REPLACED: now uses logo.jpg -->
+        <div class="parking-logo">
+            <img src="logo.jpg" alt="Logo" onerror="this.style.display='none'">
+        </div>
+        <h2>AGUA FRIO GARDEN RESORT</h2>
+        <p>EVENTS VENUE AND PARKING</p>
+    </div>
+
+    <ul class="sidebar-menu">
+        <li class="active" data-page="dashboard">
+            <a href="javascript:void(0)" onclick="showPage('dashboard', this)">
+                <i class="fas fa-chart-pie"></i><span>Dashboard</span>
+            </a>
+        </li>
+        <li data-page="bookings">
+            <a href="javascript:void(0)" onclick="showPage('bookings', this)">
+                <i class="fas fa-calendar-check"></i><span>Walk-in Registration</span>
+            </a>
+        </li>
+        <!-- NEW MENU ITEM: Online Bookings -->
+        <li data-page="onlinebookings">
+            <a href="javascript:void(0)" onclick="showPage('onlinebookings', this)">
+                <i class="fas fa-globe"></i><span>Online Bookings</span>
+                <span class="menu-badge hidden" id="onlineBookingsBadge">0</span>
+            </a>
+        </li>
+        <li data-page="parking">
+            <a href="javascript:void(0)" onclick="showPage('parking', this)">
+                <i class="fas fa-square-parking"></i><span>Parking Slot</span>
+            </a>
+        </li>
+        <li data-page="schedule">
+            <a href="javascript:void(0)" onclick="showPage('schedule', this)">
+                <i class="fas fa-calendar-days"></i><span>Booking Schedule</span>
+            </a>
+        </li>
+        <li data-page="history">
+            <a href="javascript:void(0)" onclick="showPage('history', this)">
+                <i class="fas fa-clock-rotate-left"></i><span>History</span>
+            </a>
+        </li>
+        <li data-page="userbookings">
+            <a href="javascript:void(0)" onclick="showPage('userbookings', this)">
+                <i class="fas fa-users"></i><span>All User Bookings</span>
+            </a>
+        </li>
+        <li data-page="qrscan">
+            <a href="javascript:void(0)" onclick="showPage('qrscan', this)">
+                <i class="fas fa-qrcode"></i><span>Scan QR Release</span>
+            </a>
+        </li>
+        <li data-page="settings">
+            <a href="javascript:void(0)" onclick="showPage('settings', this)">
+                <i class="fas fa-gear"></i><span>Settings</span>
+            </a>
+        </li>
+        <li class="logout-item">
+            <a href="?logout=1">
+                <i class="fas fa-right-from-bracket"></i><span>Logout</span>
+            </a>
+        </li>
+    </ul>
+
+</div>
+
+<!-- MAIN -->
+<div class="main-content">
+
+    <div class="top-bar">
+
+        <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+            <button class="hamburger" onclick="toggleSidebar()" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+
+            <div class="page-title" style="min-width:0;">
+                <h1 id="pageTitle">Dashboard</h1>
+                <p id="pageSubtitle">Smart Parking Management System</p>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <div class="ph-clock">
+                <i class="fas fa-calendar-days"></i>
+                <span id="phDateTime">Philippines Time</span>
+            </div>
+            <div class="timer-area">
+                <i class="fas fa-hourglass-half"></i>
+                <span>Session:</span>
+                <span class="timer-value" id="sessionTimer">10:00</span>
+            </div>
+            <div class="dark-mode-toggle" id="darkModeToggle" onclick="toggleDarkMode()">
+                <i class="fas fa-moon"></i>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="sessionWarning" class="session-warning">
+        <div>
+            <i class="fas fa-exclamation-triangle"></i>
+            Your session will expire in
+            <strong id="sessionWarningSeconds">60</strong> seconds.
+        </div>
+        <button class="extend-btn" onclick="extendSession()">Stay Logged In</button>
+    </div>
+
+    <div id="receiptOverlay" class="receipt-overlay" onclick="closeReceipt(event)">
+        <div class="receipt-modal" onclick="event.stopPropagation()">
+            <button class="close-receipt" onclick="closeReceipt()">&times;</button>
+            <div id="receiptContent"></div>
+        </div>
+    </div>
+
+    <div class="page active" id="dashboardPage">
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h2><i class="fas fa-chart-line"></i> Monthly Income</h2>
+                    <p>Monthly payment income based on Philippines Time from confirmed bookings.</p>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div id="onlineStatus" class="online-status">
+                        <span class="online-dot"></span> Online
+                    </div>
+                    <div class="chart-year-selector">
+                        <label for="incomeYear">Year:</label>
+                        <select id="incomeYear" onchange="loadMonthlyIncome()">
+                            <option value="2026" selected>2026</option>
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                            <option value="2023">2023</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="income-summary">
+                <div class="income-summary-item">
+                    <span class="label">Total Income (<span id="summaryYear">2026</span>)</span>
+                    <span class="value" id="totalYearIncome">₱0.00</span>
+                    <div class="small-icon"><i class="fas fa-peso-sign"></i></div>
+                </div>
+                <div class="income-summary-item">
+                    <span class="label">Average Monthly Income</span>
+                    <span class="value" id="avgMonthlyIncome">₱0.00</span>
+                    <div class="small-icon"><i class="fas fa-calculator"></i></div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="incomeChart"></canvas>
+                <div id="offlineMessage" class="offline-message">
+                    <div class="offline-icon"><i class="fas fa-wifi"></i></div>
+                    <h3>No Internet Connection</h3>
+                    <p>The monthly income graph requires an internet connection.</p>
+                </div>
+            </div>
+
+            <div class="last-updated">
+                Last updated: <span id="lastUpdated">--</span> (Philippines Time)
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="bookingsPage">
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h2><i class="fas fa-calendar-check"></i> Walk-in Registration</h2>
+                    <p>Register walk-in guest information and confirm parking booking immediately.</p>
+                </div>
+            </div>
+
+            <div class="booking-layout">
+                <form id="bookingForm" onsubmit="submitBooking(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Name *</label>
+                            <input type="text" name="guest_name" id="guest_name" placeholder="Full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Address *</label>
+                            <input type="text" name="guest_address" id="guest_address" placeholder="Complete address" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact *</label>
+                            <input type="tel" name="guest_contact" id="guest_contact"
+                                placeholder="09xxxxxxxxx (11 digits)"
+                                inputmode="numeric" autocomplete="tel"
+                                maxlength="11" minlength="11"
+                                pattern="09[0-9]{9}" required>
+                            <small class="field-hint" id="contactHint">Philippine number — starts with 09 and exactly 11 digits.</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Company Name</label>
+                            <input type="text" name="company_name" id="company_name" placeholder="Company name">
+                        </div>
+                        <div class="form-group">
+                            <label>Arrival Date *</label>
+                            <input type="date" name="arrival_date" id="arrival_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nationality *</label>
+                            <input type="text" name="nationality" id="nationality" placeholder="Nationality" required>
+                        </div>
+                        <div class="form-group">
+                            <label>No. of Person *</label>
+                            <input type="number" name="number_of_person" id="number_of_person" min="1" value="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>ID No. *</label>
+                            <input type="text" name="id_no" id="id_no" placeholder="ID number" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Place Issued *</label>
+                            <input type="text" name="place_issued" id="place_issued" placeholder="Place where ID was issued" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Departure Date *</label>
+                            <input type="date" name="departure_date" id="departure_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Parking Slot</label>
+                            <select name="slot_id" id="slot_id">
+                                <option value="">Auto Assign Available Slot</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Booking Amount</label>
+                            <input type="number" name="total_amount" id="total_amount" min="0" step="0.01" value="50.00">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Confirm Registration
+                        </button>
+                        <button type="reset" class="btn btn-secondary">
+                            <i class="fas fa-rotate-left"></i> Clear
+                        </button>
+                    </div>
+                </form>
+
+                <div class="booking-summary">
+                    <h3><i class="fas fa-user-check"></i> Registration Details</h3>
+                    <div class="summary-line"><span>Name</span><span id="summaryName">---</span></div>
+                    <div class="summary-line"><span>Contact</span><span id="summaryContact">---</span></div>
+                    <div class="summary-line"><span>Arrival</span><span id="summaryArrival">---</span></div>
+                    <div class="summary-line"><span>Departure</span><span id="summaryDeparture">---</span></div>
+                    <div class="summary-line"><span>Persons</span><span id="summaryPersons">1</span></div>
+                    <div class="summary-line"><span>Parking Slot</span><span id="summarySlot">Auto</span></div>
+                    <div class="summary-line"><span>Amount</span><span id="summaryAmount">₱50.00</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         NEW PAGE: ONLINE BOOKINGS
+    ========================================================== -->
+    <div class="page" id="onlinebookingsPage">
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h2><i class="fas fa-globe"></i> Online Bookings</h2>
+                    <p>Pending bookings submitted online. Accept to confirm and generate QR, or reject to cancel.</p>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <div class="pending-count-pill" id="pendingCountPill">
+                        <i class="fas fa-hourglass-half"></i>
+                        <span id="pendingCountText">0 pending</span>
+                    </div>
+                    <button class="btn btn-secondary" onclick="loadOnlineBookings()">
+                        <i class="fas fa-refresh"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div id="onlineBookingsContainer" class="online-bookings-grid">
+                <div class="online-booking-empty">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <h3>Loading online bookings...</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="parkingPage">
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h2><i class="fas fa-square-parking"></i> Parking Slot</h2>
+                    <p>View all parking slot status.</p>
+                </div>
+                <button class="btn btn-secondary" onclick="loadParkingSlots()">
+                    <i class="fas fa-refresh"></i> Refresh
+                </button>
+            </div>
+
+            <div class="add-slot-panel">
+                <div class="add-slot-header">
+                    <div>
+                        <h3><i class="fas fa-plus-circle"></i> Add New Parking Slot</h3>
+                        <p>Add a parking space with its picture, location, and details.</p>
+                    </div>
+                </div>
+
+                <form id="parkingSlotForm" onsubmit="submitParkingSlot(event)" enctype="multipart/form-data">
+                    <div class="add-slot-grid">
+                        <div class="form-group">
+                            <label for="slot_number">Parking Slot Number *</label>
+                            <input type="text" id="slot_number" name="slot_number" placeholder="Example: A-01" maxlength="20" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="slot_location">Parking Slot Location *</label>
+                            <input type="text" id="slot_location" name="location" placeholder="Example: Ground Floor - Near Entrance" maxlength="255" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="slot_status">Initial Status</label>
+                            <select id="slot_status" name="status">
+                                <option value="available">Available</option>
+                                <option value="occupied">Occupied</option>
+                                <option value="maintenance">Maintenance</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="slot_image">Parking Slot Picture *</label>
+                            <input type="file" id="slot_image" name="slot_image" accept="image/jpeg,image/png,image/webp,image/gif" required>
+                            <small class="field-hint">JPG, PNG, WEBP or GIF — maximum 5 MB.</small>
+                        </div>
+                        <div class="form-group full">
+                            <label for="slot_details">Parking Slot Details *</label>
+                            <textarea id="slot_details" name="details" rows="4" maxlength="2000" placeholder="Describe the parking slot, size, nearby landmark, vehicle type, restrictions, etc." required></textarea>
+                        </div>
+                        <div class="form-group full">
+                            <div class="slot-image-preview-wrap">
+                                <img id="slotImagePreview" class="slot-image-preview" alt="Parking slot preview">
+                                <span id="slotImagePreviewText">Image preview will appear here.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Parking Slot</button>
+                        <button type="reset" class="btn btn-secondary" onclick="resetParkingSlotPreview()"><i class="fas fa-rotate-left"></i> Clear</button>
+                    </div>
+                </form>
+            </div>
+
+            <br>
+
+            <div class="slot-grid" id="slotGrid">
+                <div class="empty-state">Loading parking slots...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="schedulePage">
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h2><i class="fas fa-calendar-days"></i> Booking Schedule</h2>
+                    <p>Click any date to see who booked and the complete booking details.</p>
+                </div>
+                <button class="btn btn-secondary" onclick="loadSchedule()">
+                    <i class="fas fa-refresh"></i> Refresh
+                </button>
+            </div>
+
+            <div class="calendar-layout">
+                <div class="calendar-box">
+                    <div class="calendar-header">
+                        <h3 id="calendarMonthYear">Calendar</h3>
+                        <div class="calendar-nav">
+                            <button onclick="changeCalendarMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+                            <button onclick="goToToday()"><i class="fas fa-calendar-day"></i></button>
+                            <button onclick="changeCalendarMonth(1)"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="calendar-weekdays">
+                        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div>
+                        <div>Thu</div><div>Fri</div><div>Sat</div>
+                    </div>
+
+                    <div class="calendar-days" id="calendarDays"></div>
+                </div>
+
+                <div class="day-details" id="dayDetails">
+                    <h3>Select a Date</h3>
+                    <p class="day-details-subtitle">Click a date on the calendar to view bookings.</p>
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-check"></i>
+                        <h3>No Date Selected</h3>
+                        <p>Select a date to see booking information.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="historyPage">
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h2><i class="fas fa-clock-rotate-left"></i> All Transactions History</h2>
+                    <p>Complete list of all booking transactions including pending, approved, completed, and cancelled.</p>
+                </div>
+                <button class="btn btn-secondary" onclick="loadHistory()">
+                    <i class="fas fa-refresh"></i> Refresh
+                </button>
+            </div>
+
+            <div id="historyTableContainer" class="table-wrapper">
+                <div class="empty-state">Loading transactions...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="userbookingsPage">
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h2><i class="fas fa-users"></i> All User Bookings</h2>
+                    <p>Every approved or completed booking with a QR code. Scan the QR to release the parking slot & booked dates.</p>
+                </div>
+                <button class="btn btn-secondary" onclick="loadAllUserBookings()">
+                    <i class="fas fa-refresh"></i> Refresh
+                </button>
+            </div>
+
+            <div id="userBookingsContainer" class="table-wrapper">
+                <div class="empty-state">Loading user bookings...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="qrscanPage">
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h2><i class="fas fa-qrcode"></i> Release Booking</h2>
+                    <p>Choose either QR scanning or enter the booking reference number to release the parking slot & booked dates.</p>
+                </div>
+            </div>
+
+            <div class="qr-choice-note">
+                <div class="qr-choice-icon"><i class="fas fa-qrcode"></i></div>
+                <div>
+                    <strong>Choose how to release the booking</strong>
+                    <span>You can either scan the guest's QR code or type the booking reference number below.</span>
+                </div>
+            </div>
+
+            <div class="qr-scan-layout">
+                <div class="qr-scanner-box">
+                    <div id="qrReader"></div>
+                </div>
+
+                <div class="qr-result-box">
+                    <h3><i class="fas fa-circle-info"></i> Release Booking</h3>
+
+                    <div class="reference-release-box">
+                        <div class="reference-title">
+                            <i class="fas fa-keyboard"></i>
+                            Type Reference Number
+                        </div>
+                        <p class="reference-help">
+                            Enter the reference number printed on the guest's receipt or booking confirmation.
+                        </p>
+                        <div class="reference-input-row">
+                            <input
+                                type="text"
+                                id="bookingReferenceInput"
+                                class="form-control"
+                                placeholder="Example: REF-20260924-000001"
+                                autocomplete="off"
+                                onkeydown="if(event.key === 'Enter'){event.preventDefault(); releaseByReference();}">
+                            <button type="button" class="btn btn-primary" id="referenceReleaseBtn" onclick="releaseByReference()">
+                                <i class="fas fa-unlock"></i> Release
+                            </button>
+                        </div>
+                        <div class="or-divider"><span>OR SCAN QR CODE</span></div>
+                    </div>
+
+                    <h3 style="margin-top:18px;"><i class="fas fa-clipboard-check"></i> Scan Result</h3>
+                    <div id="qrResultContent">
+                        <p style="color:var(--muted);font-size:12px;">Waiting for QR scan or reference number...</p>
+                    </div>
+
+                    <div class="admin-qr-block">
+                        <h4>
+                            <i class="fas fa-mobile-screen-button"></i>
+                            Open Scanner On Phone
+                        </h4>
+                        <p>
+                            Scan this QR with your phone camera to open the Release Scanner on your phone.
+                        </p>
+                        <div id="adminQuickQr"></div>
+                        <div class="admin-qr-url" id="adminQrUrlText">
+                            Detecting network address...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         SETTINGS PAGE
+    ========================================================== -->
+    <div class="page" id="settingsPage">
+        <div class="section">
+            <div class="section-header">
+                <div>
+                    <h2><i class="fas fa-gear"></i> Settings</h2>
+                    <p>Manage the admin account and Agua Frio Garden Resort information.</p>
+                </div>
+                <button class="btn btn-secondary" onclick="loadSettings()">
+                    <i class="fas fa-refresh"></i> Refresh
+                </button>
+            </div>
+
+            <div class="settings-grid">
+
+                <!-- ADMIN ACCOUNT -->
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <div class="settings-card-icon"><i class="fas fa-user-shield"></i></div>
+                        <div>
+                            <h3>Admin Account</h3>
+                            <p>Change the username and password used to access the dashboard.</p>
+                        </div>
+                    </div>
+
+                    <form id="adminSettingsForm" onsubmit="updateAdminSettings(event)">
+                        <div class="settings-form-grid">
+                            <div class="form-group full">
+                                <label for="settingsCurrentUsername">Current Username</label>
+                                <input type="text" id="settingsCurrentUsername" readonly>
+                            </div>
+
+                            <div class="form-group full">
+                                <label for="settingsCurrentPassword">Current Password *</label>
+                                <input type="password" id="settingsCurrentPassword" autocomplete="current-password" placeholder="Enter current password" required>
+                            </div>
+
+                            <div class="form-group full">
+                                <label for="settingsNewUsername">New Username *</label>
+                                <input type="text" id="settingsNewUsername" minlength="3" maxlength="50" placeholder="New admin username" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="settingsNewPassword">New Password</label>
+                                <input type="password" id="settingsNewPassword" minlength="6" autocomplete="new-password" placeholder="Leave blank to keep current">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="settingsConfirmPassword">Confirm Password</label>
+                                <input type="password" id="settingsConfirmPassword" minlength="6" autocomplete="new-password" placeholder="Repeat new password">
+                            </div>
+                        </div>
+
+                        <div class="settings-note">
+                            <i class="fas fa-shield-halved"></i> For security, your current password is required before changing account credentials. New passwords are stored using PHP password hashing.
+                        </div>
+
+                        <div class="settings-actions">
+                            <button type="button" class="btn btn-secondary" onclick="resetAdminSettingsForm()">
+                                <i class="fas fa-rotate-left"></i> Clear
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="saveAdminSettingsBtn">
+                                <i class="fas fa-floppy-disk"></i> Save Account
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- RESORT INFORMATION -->
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <div class="settings-card-icon"><i class="fas fa-hotel"></i></div>
+                        <div>
+                            <h3>Resort Information</h3>
+                            <p>Update the information displayed for Agua Frio Garden Resort.</p>
+                        </div>
+                    </div>
+
+                    <form id="resortSettingsForm" onsubmit="updateResortSettings(event)">
+                        <div class="settings-form-grid">
+                            <div class="form-group full">
+                                <label for="resortName">Resort Name *</label>
+                                <input type="text" id="resortName" maxlength="150" required>
+                            </div>
+
+                            <div class="form-group full">
+                                <label for="resortAddress">Address</label>
+                                <input type="text" id="resortAddress" maxlength="255" placeholder="Resort address">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="resortContact">Contact Number</label>
+                                <input type="text" id="resortContact" maxlength="100" placeholder="Contact number">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="resortEmail">Email</label>
+                                <input type="email" id="resortEmail" maxlength="150" placeholder="Email address">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="resortCheckIn">Check-in</label>
+                                <input type="text" id="resortCheckIn" maxlength="50" placeholder="2:00 PM">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="resortCheckOut">Check-out</label>
+                                <input type="text" id="resortCheckOut" maxlength="50" placeholder="12:00 PM">
+                            </div>
+
+                            <div class="form-group full">
+                                <label for="resortDescription">About the Resort</label>
+                                <textarea id="resortDescription" rows="5" maxlength="2000" placeholder="Short description of Agua Frio Garden Resort"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="resort-info-preview">
+                            <h4 id="previewResortName">Agua Frio Garden Resort</h4>
+                            <p id="previewResortDescription">A relaxing garden resort and events venue for guests, celebrations, and private stays.</p>
+                            <div class="resort-info-meta">
+                                <div><i class="fas fa-location-dot"></i><span id="previewResortAddress">Address not set</span></div>
+                                <div><i class="fas fa-phone"></i><span id="previewResortContact">Contact not set</span></div>
+                                <div><i class="fas fa-envelope"></i><span id="previewResortEmail">Email not set</span></div>
+                                <div><i class="fas fa-clock"></i><span id="previewResortHours">Check-in 2:00 PM · Check-out 12:00 PM</span></div>
+                            </div>
+                        </div>
+
+                        <div class="settings-actions">
+                            <button type="submit" class="btn btn-primary" id="saveResortSettingsBtn">
+                                <i class="fas fa-floppy-disk"></i> Save Resort Info
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+/* =========================================================
+   DATA PROTECTION / ANTI-INSPECT
+========================================================= */
+
+(function() {
+    'use strict';
+
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        return false;
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'F12' || e.keyCode === 123) { e.preventDefault(); return false; }
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey &&
+            (e.key === 'I' || e.key === 'i' || e.keyCode === 73)) { e.preventDefault(); return false; }
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey &&
+            (e.key === 'J' || e.key === 'j' || e.keyCode === 74)) { e.preventDefault(); return false; }
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey &&
+            (e.key === 'C' || e.key === 'c' || e.keyCode === 67)) { e.preventDefault(); return false; }
+        if ((e.ctrlKey || e.metaKey) &&
+            (e.key === 'U' || e.key === 'u' || e.keyCode === 85)) { e.preventDefault(); return false; }
+        if ((e.ctrlKey || e.metaKey) &&
+            (e.key === 'S' || e.key === 's' || e.keyCode === 83)) { e.preventDefault(); return false; }
+        if ((e.ctrlKey || e.metaKey) && !e.shiftKey &&
+            (e.key === 'A' || e.key === 'a' || e.keyCode === 65)) {
+            const tag = (e.target && e.target.tagName) || '';
+            if (tag !== 'INPUT' && tag !== 'TEXTAREA' && !e.target.isContentEditable) {
+                e.preventDefault(); return false;
+            }
+        }
+        if ((e.ctrlKey || e.metaKey) &&
+            (e.key === 'P' || e.key === 'p' || e.keyCode === 80)) { e.preventDefault(); return false; }
+        if (e.key === 'PrintScreen' || e.keyCode === 44) {
+            try { navigator.clipboard.writeText(''); } catch (err) {}
+        }
+    });
+
+    let devtoolsOpen = false;
+    const THRESHOLD = 160;
+
+    function detectDevTools() {
+        const widthDiff  = window.outerWidth  - window.innerWidth;
+        const heightDiff = window.outerHeight - window.innerHeight;
+        const isOpen = widthDiff > THRESHOLD || heightDiff > THRESHOLD;
+
+        if (isOpen !== devtoolsOpen) {
+            devtoolsOpen = isOpen;
+            if (isOpen) {
+                document.body.classList.add('devtools-detected');
+                clearSensitiveContent();
+            } else {
+                document.body.classList.remove('devtools-detected');
+            }
+        }
+    }
+
+    setInterval(detectDevTools, 800);
+    window.addEventListener('resize', detectDevTools);
+
+    function clearSensitiveContent() {
+        [
+            'historyTableContainer',
+            'userBookingsContainer',
+            'dayDetails',
+            'slotGrid',
+            'receiptContent',
+            'qrResultContent',
+            'onlineBookingsContainer'
+        ].forEach(function(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.dataset.backupHtml = el.innerHTML;
+                el.innerHTML = '<div style="padding:40px;text-align:center;color:#ef4444;font-weight:700;">Content hidden — close DevTools</div>';
+            }
+        });
+    }
+
+    document.addEventListener('dragstart', function(e) {
+        if (e.target && e.target.tagName === 'IMG') {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    setInterval(function() {
+        try { console.clear(); } catch (e) {}
+    }, 2500);
+
+})();
+
+/* =========================================================
+   GLOBAL VARIABLES
+========================================================= */
+
+let incomeChart = null;
+let scheduleBookings = [];
+let calendarDate = new Date();
+let selectedDate = null;
+let inactivityTimer = null;
+let sessionTimerInterval = null;
+let sessionTimeLeft = 10 * 60;
+let warningShown = false;
+
+const SESSION_DURATION = 10 * 60;
+const WARNING_THRESHOLD = 60;
+
+const MONTH_NAMES = [
+    'January','February','March','April','May','June',
+    'July','August','September','October','November','December'
+];
+
+let html5QrScanner = null;
+let lastQrScanTime = 0;
+let lastQrScanText = '';
+let scanCooldownTimer = null;
+
+const FALLBACK_LAN_IP = '192.168.137.1';
+
+/* =========================================================
+   PHILIPPINES TIME
+========================================================= */
+
+function getPhilippinesDateTime() {
+    return new Intl.DateTimeFormat('en-PH', {
+        timeZone: 'Asia/Manila',
+        year: 'numeric', month: 'long', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: true
+    }).format(new Date());
+}
+
+function updatePhilippinesClock() {
+    const element = document.getElementById('phDateTime');
+    if (element) element.textContent = getPhilippinesDateTime();
+}
+
+setInterval(updatePhilippinesClock, 1000);
+
+/* =========================================================
+   API
+========================================================= */
+
+async function apiCall(action, data = {}) {
+    const isFormData = data instanceof FormData;
+    let body = data;
+    const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+
+    if (!isFormData) {
+        headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        body = new URLSearchParams(data);
+        body.append('action', action);
+    } else {
+        data.append('action', action);
+    }
+
+    const response = await fetch(window.location.href, {
+        method: 'POST',
+        headers: headers,
+        body: body
+    });
+
+    if (!response.ok) throw new Error('Server request failed.');
+    return await response.json();
+}
+
+/* =========================================================
+   PAGE NAVIGATION
+========================================================= */
+
+function showPage(page, clickedElement = null) {
+
+    document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+
+    const target = document.getElementById(page + 'Page');
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.sidebar-menu li').forEach(el => el.classList.remove('active'));
+
+    const menu = document.querySelector(`.sidebar-menu li[data-page="${page}"]`);
+    if (menu) menu.classList.add('active');
+
+    const titles = {
+        dashboard: ['Dashboard', 'Smart Parking Management System'],
+        bookings: ['Walk-in Registration', 'Register walk-in guest and confirm immediately'],
+        onlinebookings: ['Online Bookings', 'Accept or reject pending online bookings'],
+        parking: ['Parking Slot', 'Parking Slot Monitoring'],
+        schedule: ['Booking Schedule', 'Daily Booking Calendar'],
+        history: ['All Transactions History', 'Complete list of all booking transactions'],
+        userbookings: ['All User Bookings', 'All approved & completed bookings with QR codes'],
+        qrscan: ['Scan QR Release', 'Scan a guest receipt QR to release the parking slot & booked dates'],
+        settings: ['Settings', 'Manage admin account and Agua Frio Garden Resort information']
+    };
+
+    if (titles[page]) {
+        document.getElementById('pageTitle').textContent = titles[page][0];
+        document.getElementById('pageSubtitle').textContent = titles[page][1];
+    }
+
+    if (page === 'dashboard') loadMonthlyIncome();
+    if (page === 'bookings') { setupContactValidation(); loadParkingSlotsForForm(); }
+    if (page === 'onlinebookings') loadOnlineBookings();
+    if (page === 'parking') { setupParkingSlotImagePreview(); loadParkingSlots(); }
+    if (page === 'schedule') loadSchedule();
+    if (page === 'history') loadHistory();
+    if (page === 'userbookings') loadAllUserBookings();
+
+    if (page === 'qrscan') startQrScanner();
+    else stopQrScanner();
+
+    if (page === 'settings') loadSettings();
+
+    closeSidebar();
+}
+
+function closeSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('show');
+}
+
+/* =========================================================
+   ONLINE BOOKINGS
+========================================================= */
+
+async function loadOnlineBookings() {
+    const container = document.getElementById('onlineBookingsContainer');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="online-booking-empty">
+            <i class="fas fa-spinner fa-spin"></i>
+            <h3>Loading online bookings...</h3>
+        </div>
+    `;
+
+    try {
+        const result = await apiCall('getBookings');
+
+        if (!result.success) {
+            container.innerHTML = `
+                <div class="online-booking-empty">
+                    <i class="fas fa-triangle-exclamation"></i>
+                    <h3>Unable to load online bookings</h3>
+                    <p>${escapeHTML(result.message || 'Unknown error')}</p>
+                </div>
+            `;
+            updatePendingBadge(0);
+            return;
+        }
+
+        const bookings = result.bookings || [];
+        updatePendingBadge(bookings.length);
+
+        if (bookings.length === 0) {
+            container.innerHTML = `
+                <div class="online-booking-empty">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>No Pending Online Bookings</h3>
+                    <p>All online bookings have been processed. New ones will appear here.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+
+        bookings.forEach(b => {
+            const bookingTime = b.booking_time
+                ? new Date(b.booking_time).toLocaleString('en-PH', {
+                    year: 'numeric', month: 'short', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                  })
+                : 'N/A';
+
+            const amount = Number(b.total_amount || 0).toLocaleString('en-PH', {
+                minimumFractionDigits: 2
+            });
+
+            html += `
+                <div class="online-booking-card" data-booking-id="${escapeHTML(b.id)}">
+                    <div class="booking-id">BOOKING #${escapeHTML(b.id)}</div>
+                    <h4><i class="fas fa-user"></i> ${escapeHTML(b.guest_name || 'Unknown Guest')}</h4>
+
+                    <div class="info-row"><span>Contact</span><span>${escapeHTML(b.guest_contact || 'N/A')}</span></div>
+                    <div class="info-row"><span>Address</span><span>${escapeHTML(b.guest_address || 'N/A')}</span></div>
+                    <div class="info-row"><span>Company</span><span>${escapeHTML(b.company_name || 'N/A')}</span></div>
+                    <div class="info-row"><span>Nationality</span><span>${escapeHTML(b.nationality || 'N/A')}</span></div>
+                    <div class="info-row"><span>ID No.</span><span>${escapeHTML(b.id_no || 'N/A')}</span></div>
+                    <div class="info-row"><span>Place Issued</span><span>${escapeHTML(b.place_issued || 'N/A')}</span></div>
+                    <div class="info-row"><span>Persons</span><span>${escapeHTML(b.number_of_person || '1')}</span></div>
+                    <div class="info-row"><span>Arrival</span><span>${escapeHTML(b.arrival_date || 'N/A')}</span></div>
+                    <div class="info-row"><span>Departure</span><span>${escapeHTML(b.departure_date || 'N/A')}</span></div>
+                    <div class="info-row"><span>Parking Slot</span><span>${escapeHTML(b.slot_number || 'Auto')}</span></div>
+                    <div class="info-row"><span>Amount</span><span>₱${amount}</span></div>
+                    <div class="info-row"><span>Submitted</span><span>${escapeHTML(bookingTime)}</span></div>
+
+                    <div class="online-booking-actions">
+                        <button class="btn btn-success btn-sm" onclick="acceptOnlineBooking(${Number(b.id)})">
+                            <i class="fas fa-check"></i> Accept
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="rejectOnlineBooking(${Number(b.id)})">
+                            <i class="fas fa-xmark"></i> Reject
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+
+    } catch (error) {
+        console.error(error);
+        container.innerHTML = `
+            <div class="online-booking-empty">
+                <i class="fas fa-triangle-exclamation"></i>
+                <h3>Unable to load online bookings</h3>
+                <p>Please check your connection and try again.</p>
+            </div>
+        `;
+        updatePendingBadge(0);
+    }
+}
+
+function updatePendingBadge(count) {
+    const badge = document.getElementById('onlineBookingsBadge');
+    const pill = document.getElementById('pendingCountText');
+
+    if (badge) {
+        if (count > 0) {
+            badge.textContent = count;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+
+    if (pill) {
+        pill.textContent = count + ' pending';
+    }
+}
+
+async function acceptOnlineBooking(bookingId) {
+    if (!bookingId) return;
+
+    if (!confirm('Accept this online booking?\n\nThis will:\n• Approve the booking\n• Generate a QR code receipt\n• Mark the parking slot as occupied\n• Send an SMS to the guest')) {
+        return;
+    }
+
+    try {
+        const result = await apiCall('confirmRegistration', { booking_id: bookingId });
+
+        if (!result.success) {
+            alert(result.message || 'Unable to accept booking.');
+            return;
+        }
+
+        if (result.receipt) {
+            showReceipt(result.receipt);
+        }
+
+        /* FORCE REFRESH — all slot-related views */
+        await loadParkingSlots();
+        await loadParkingSlotsForForm();
+        await loadOnlineBookings();
+        await loadSchedule();
+        await loadHistory();
+        await loadAllUserBookings();
+        await loadMonthlyIncome();
+
+    } catch (error) {
+        console.error(error);
+        alert('An error occurred while accepting the booking.');
+    }
+}
+
+async function rejectOnlineBooking(bookingId) {
+    if (!bookingId) return;
+
+    if (!confirm('Reject this online booking?\n\nThe booking will be marked as CANCELLED and an SMS will be sent to the guest.')) {
+        return;
+    }
+
+    try {
+        const result = await apiCall('rejectBooking', { booking_id: bookingId });
+
+        if (!result.success) {
+            alert(result.message || 'Unable to reject booking.');
+            return;
+        }
+
+        loadOnlineBookings();
+        loadParkingSlots();
+        loadSchedule();
+        loadHistory();
+
+    } catch (error) {
+        console.error(error);
+        alert('An error occurred while rejecting the booking.');
+    }
+}
+
+/* =========================================================
+   MONTHLY INCOME
+========================================================= */
+
+async function loadMonthlyIncome() {
+
+    if (!navigator.onLine) {
+        updateOnlineStatus();
+        return;
+    }
+
+    if (typeof Chart === 'undefined') return;
+
+    const year = document.getElementById('incomeYear').value;
+
+    try {
+        const result = await apiCall('getMonthlyIncome', { year: year });
+
+        if (!result.success) throw new Error(result.message);
+
+        const data = result.data.map(Number);
+        const total = Number(result.total_income || 0);
+        const average = Number(result.average_monthly || 0);
+
+        document.getElementById('summaryYear').textContent = result.year;
+
+        document.getElementById('totalYearIncome').textContent =
+            '₱' + total.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+
+        document.getElementById('avgMonthlyIncome').textContent =
+            '₱' + average.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+
+        updateIncomeChart(data, result.year);
+
+        document.getElementById('lastUpdated').textContent = getPhilippinesDateTime();
+
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function updateIncomeChart(data, year) {
+
+    const canvas = document.getElementById('incomeChart');
+    if (!canvas) return;
+
+    const dark = document.body.classList.contains('dark-mode');
+    const textColor = dark ? '#e5e7eb' : '#374151';
+    const gridColor = dark ? '#293247' : '#e5e7eb';
+
+    if (incomeChart) {
+        incomeChart.data.datasets[0].data = data;
+        incomeChart.options.plugins.title.text = `Monthly Income — ${year}`;
+        incomeChart.update();
+        return;
+    }
+
+    incomeChart = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: MONTH_NAMES,
+            datasets: [{
+                label: 'Monthly Income (₱)',
+                data: data,
+                fill: true,
+                tension: .35,
+                borderWidth: 3,
+                borderColor: '#7c3aed',
+                backgroundColor: 'rgba(124,58,237,.12)',
+                pointBackgroundColor: '#06b6d4',
+                pointBorderColor: '#ffffff',
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: textColor } },
+                title: {
+                    display: true,
+                    text: `Monthly Income — ${year}`,
+                    color: textColor,
+                    font: { size: 14, weight: '800' }
+                }
+            },
+            scales: {
+                x: { ticks: { color: textColor }, grid: { display: false } },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: textColor,
+                        callback: function(value) {
+                            return '₱' + Number(value).toLocaleString('en-PH');
+                        }
+                    },
+                    grid: { color: gridColor }
+                }
+            }
+        }
+    });
+}
+
+/* =========================================================
+   ONLINE STATUS
+========================================================= */
+
+function updateOnlineStatus() {
+    const status = document.getElementById('onlineStatus');
+    const offline = document.getElementById('offlineMessage');
+    if (!status) return;
+
+    if (navigator.onLine) {
+        status.classList.remove('offline');
+        status.innerHTML = '<span class="online-dot"></span> Online';
+        if (offline) offline.classList.remove('show');
+    } else {
+        status.classList.add('offline');
+        status.innerHTML = '<span class="online-dot"></span> Offline';
+        if (offline) offline.classList.add('show');
+        if (incomeChart) { incomeChart.destroy(); incomeChart = null; }
+    }
+}
+
+window.addEventListener('online', function() { updateOnlineStatus(); loadMonthlyIncome(); });
+window.addEventListener('offline', updateOnlineStatus);
+
+/* =========================================================
+   BOOKING CONTACT VALIDATION
+========================================================= */
+
+function setupContactValidation() {
+    const contact = document.getElementById('guest_contact');
+    if (!contact || contact.dataset.validationReady === '1') return;
+    contact.dataset.validationReady = '1';
+
+    contact.addEventListener('input', function() {
+        let value = this.value.replace(/\D/g, '');
+        this.value = value.slice(0, 11);
+        const hint = document.getElementById('contactHint');
+
+        if (this.value.length === 11 && this.value.startsWith('09')) {
+            this.classList.remove('input-invalid');
+            this.classList.add('input-valid');
+            if (hint) hint.textContent = '✓ Valid Philippine number.';
+        } else if (this.value.length > 0) {
+            this.classList.remove('input-valid');
+            this.classList.add('input-invalid');
+            if (hint) {
+                if (!this.value.startsWith('09') && this.value.length >= 2) {
+                    hint.textContent = 'Must start with 09';
+                } else {
+                    hint.textContent = `${this.value.length}/11 digits — must start with 09`;
+                }
+            }
+        } else {
+            this.classList.remove('input-invalid');
+            this.classList.remove('input-valid');
+            if (hint) hint.textContent = 'Philippine number — starts with 09 and exactly 11 digits.';
+        }
+    });
+
+    contact.addEventListener('keydown', function(event) {
+        const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Tab','Home','End'];
+        if (allowed.includes(event.key) || event.ctrlKey || event.metaKey) return;
+        if (!/^[0-9]$/.test(event.key) || this.value.length >= 11) event.preventDefault();
+    });
+
+    contact.addEventListener('paste', function(event) {
+        event.preventDefault();
+        const pasted = (event.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 11);
+        this.value = pasted;
+        this.dispatchEvent(new Event('input', { bubbles:true }));
+    });
+}
+
+/* =========================================================
+   ADD PARKING SLOT
+========================================================= */
+
+function resetParkingSlotPreview() {
+    const image = document.getElementById('slotImagePreview');
+    const text = document.getElementById('slotImagePreviewText');
+    if (image) { image.removeAttribute('src'); image.style.display = 'none'; }
+    if (text) { text.style.display = 'block'; text.textContent = 'Image preview will appear here.'; }
+}
+
+function setupParkingSlotImagePreview() {
+    const input = document.getElementById('slot_image');
+    if (!input || input.dataset.previewReady === '1') return;
+    input.dataset.previewReady = '1';
+
+    input.addEventListener('change', function() {
+        const file = this.files && this.files[0];
+        const image = document.getElementById('slotImagePreview');
+        const text = document.getElementById('slotImagePreviewText');
+        if (!file) { resetParkingSlotPreview(); return; }
+        if (!file.type.startsWith('image/')) {
+            alert('Please select a valid image file.');
+            this.value = ''; resetParkingSlotPreview(); return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Parking slot picture must not exceed 5 MB.');
+            this.value = ''; resetParkingSlotPreview(); return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            if (image) { image.src = e.target.result; image.style.display = 'block'; }
+            if (text) text.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+async function submitParkingSlot(event) {
+    event.preventDefault();
+    const form = document.getElementById('parkingSlotForm');
+    if (!form) return;
+    const image = document.getElementById('slot_image');
+    if (!image || !image.files || !image.files[0]) {
+        alert('Please select a parking slot picture.');
+        return;
+    }
+    const formData = new FormData(form);
+    try {
+        const result = await apiCall('addParkingSlot', formData);
+        if (!result.success) {
+            alert(result.message || 'Unable to add parking slot.');
+            return;
+        }
+        alert(result.message || 'New parking slot added successfully.');
+        form.reset();
+        resetParkingSlotPreview();
+        await loadParkingSlots();
+        await loadParkingSlotsForForm();
+    } catch (error) {
+        console.error(error);
+        alert('An error occurred while adding the parking slot.');
+    }
+}
+
+/* =========================================================
+   BOOKINGS - WALK-IN
+========================================================= */
+
+async function submitBooking(event) {
+
+    event.preventDefault();
+
+    const form = document.getElementById('bookingForm');
+
+    const contact = document.getElementById('guest_contact');
+    if (!contact || !/^09[0-9]{9}$/.test(contact.value)) {
+        if (contact) { contact.classList.add('input-invalid'); contact.focus(); }
+        alert('Contact number must be a valid Philippine number starting with 09 and exactly 11 digits.');
+        return;
+    }
+
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => { data[key] = value; });
+
+    try {
+
+        const result = await apiCall('addBooking', data);
+
+        if (!result.success) {
+            alert(result.message || 'Unable to register booking.');
+            return;
+        }
+
+        if (result.receipt) {
+            showReceipt(result.receipt);
+        }
+
+        form.reset();
+        document.getElementById('number_of_person').value = 1;
+        document.getElementById('total_amount').value = '50.00';
+        updateBookingSummary();
+
+        loadParkingSlotsForForm();
+        loadSchedule();
+        loadParkingSlots();
+        loadMonthlyIncome();
+
+    } catch (error) {
+        console.error(error);
+        alert('An error occurred while saving the booking.');
+    }
+}
+
+/* =========================================================
+   RECEIPT
+========================================================= */
+
+function showReceipt(data) {
+
+    const overlay = document.getElementById('receiptOverlay');
+    const content = document.getElementById('receiptContent');
+
+    const formattedAmount = Number(data.total_amount || 0).toLocaleString('en-PH', {
+        minimumFractionDigits: 2
+    });
+
+    const confirmedDate = data.confirmed_at
+        ? new Date(data.confirmed_at).toLocaleString('en-PH', {
+            year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          })
+        : 'N/A';
+
+    const qrPayload = 'AF-BOOKING-' + (data.booking_id || 0) + '-REF-' + (data.reference_number || 'NA');
+
+    content.innerHTML = `
+        <div class="receipt-qr-wrap">
+            <div id="receiptQrTarget"></div>
+        </div>
+
+        <div class="receipt-header">
+            <h2><i class="fas fa-parking"></i> Parking Receipt</h2>
+            <div class="ref-number">
+                Reference: <span>${escapeHTML(data.reference_number || 'N/A')}</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-top:5px;">
+                Booking ID: #${escapeHTML(data.booking_id || 'N/A')}
+            </div>
+        </div>
+
+        <div class="receipt-body">
+            <div class="receipt-item full">
+                <span class="label">Guest Name</span>
+                <span class="value">${escapeHTML(data.guest_name || 'N/A')}</span>
+            </div>
+            <div class="receipt-item full">
+                <span class="label">Address</span>
+                <span class="value">${escapeHTML(data.guest_address || 'N/A')}</span>
+            </div>
+            <div class="receipt-item">
+                <span class="label">Contact</span>
+                <span class="value">${escapeHTML(data.guest_contact || 'N/A')}</span>
+            </div>
+            <div class="receipt-item">
+                <span class="label">Company</span>
+                <span class="value">${escapeHTML(data.company_name || 'N/A')}</span>
+            </div>
+            <div class="receipt-item">
+                <span class="label">Arrival Date</span>
+                <span class="value">${escapeHTML(data.arrival_date || 'N/A')}</span>
+            </div>
+            <div class="receipt-item">
+                <span class="label">Departure Date</span>
+                <span class="value">${escapeHTML(data.departure_date || 'N/A')}</span>
+            </div>
+            <div class="receipt-item">
+                <span class="label">Nationality</span>
+                <span class="value">${escapeHTML(data.nationality || 'N/A')}</span>
+            </div>
+            <div class="receipt-item">
+                <span class="label">No. of Persons</span>
+                <span class="value">${escapeHTML(data.number_of_person || '1')}</span>
+            </div>
+            <div class="receipt-item">
+                <span class="label">ID No.</span>
+                <span class="value">${escapeHTML(data.id_no || 'N/A')}</span>
+            </div>
+            <div class="receipt-item">
+                <span class="label">Place Issued</span>
+                <span class="value">${escapeHTML(data.place_issued || 'N/A')}</span>
+            </div>
+            <div class="receipt-item">
+                <span class="label">Parking Slot</span>
+                <span class="value">${escapeHTML(data.slot_number || 'N/A')}</span>
+            </div>
+            <div class="receipt-item">
+                <span class="label">Amount Paid</span>
+                <span class="value">₱${formattedAmount}</span>
+            </div>
+            <div class="receipt-item full">
+                <span class="label">Confirmed At</span>
+                <span class="value">${escapeHTML(confirmedDate)}</span>
+            </div>
+        </div>
+
+        <div class="receipt-footer">
+            <div class="status-badge approved">
+                <i class="fas fa-check-circle"></i> CONFIRMED
+            </div>
+            <br>
+            <button class="print-btn" onclick="printReceipt()">
+                <i class="fas fa-print"></i> Print Receipt
+            </button>
+        </div>
+    `;
+
+    overlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+
+    const qrTarget = document.getElementById('receiptQrTarget');
+    if (qrTarget && typeof QRCode !== 'undefined') {
+        qrTarget.innerHTML = '';
+        new QRCode(qrTarget, {
+            text: qrPayload,
+            width: 200,
+            height: 200,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    }
+}
+
+function closeReceipt(event) {
+    if (event && event.target && !event.target.closest('.receipt-modal')) return;
+    document.getElementById('receiptOverlay').classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+function printReceipt() {
+    const content = document.getElementById('receiptContent');
+    const printWindow = window.open('', '_blank', 'width=600,height=800');
+
+    const clone = content.cloneNode(true);
+    const qrEl = clone.querySelector('#receiptQrTarget');
+    if (qrEl) {
+        const canvas = qrEl.querySelector('canvas');
+        if (canvas) {
+            const img = document.createElement('img');
+            img.src = canvas.toDataURL();
+            img.style.width = '200px';
+            img.style.height = '200px';
+            img.style.background = '#fff';
+            img.style.padding = '10px';
+            img.style.borderRadius = '14px';
+            img.style.display = 'block';
+            img.style.margin = '0 auto';
+            qrEl.innerHTML = '';
+            qrEl.appendChild(img);
+        }
+    }
+
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Parking Receipt</title>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+            <style>
+                body { font-family: 'Inter', sans-serif; padding: 40px; max-width: 600px; margin: 0 auto; color: #172033; }
+                .receipt-qr-wrap { text-align: center; padding-bottom: 20px; border-bottom: 2px dashed #e5e7eb; margin-bottom: 20px; }
+                .receipt-qr-wrap canvas,
+                .receipt-qr-wrap img { background: #ffffff; padding: 10px; border-radius: 14px; border: 1px solid #e5e7eb; display:block; margin: 0 auto; }
+                .receipt-header { text-align: center; border-bottom: 2px dashed #e5e7eb; padding-bottom: 20px; margin-bottom: 20px; }
+                .receipt-header h2 { font-size: 24px; color: #7c3aed; }
+                .ref-number { font-size: 14px; color: #6b7280; }
+                .ref-number span { color: #172033; font-family: monospace; font-size: 16px; }
+                .receipt-body { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
+                .receipt-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb; font-size: 13px; }
+                .receipt-item.full { grid-column: 1 / -1; }
+                .receipt-item .label { color: #6b7280; font-weight: 500; }
+                .receipt-item .value { font-weight: 700; text-align: right; }
+                .receipt-footer { margin-top: 20px; padding-top: 20px; border-top: 2px dashed #e5e7eb; text-align: center; }
+                .status-badge { display: inline-block; padding: 8px 20px; border-radius: 999px; font-weight: 800; font-size: 14px; background: rgba(16,185,129,.15); color: #059669; }
+                @media print { body { padding: 20px; } .no-print { display: none; } }
+            </style>
+        </head>
+        <body>
+            ${clone.innerHTML.replace(/<button[^>]*>.*?<\/button>/, '')}
+            <div style="text-align:center;margin-top:30px;font-size:12px;color:#6b7280;">
+                <p>Thank you for choosing our parking service!</p>
+                <p>This is a system-generated receipt.</p>
+            </div>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    setTimeout(() => { printWindow.print(); }, 500);
+}
+
+/* =========================================================
+   PARKING SLOTS
+========================================================= */
+
+async function loadParkingSlots() {
+
+    const grid = document.getElementById('slotGrid');
+    if (!grid) return;
+
+    grid.innerHTML = `<div class="empty-state">Loading parking slots...</div>`;
+
+    try {
+        const result = await apiCall('getParkingSlots');
+
+        if (!result.success || !result.slots.length) {
+            grid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-square-parking"></i>
+                    <h3>No Parking Slots</h3>
+                    <p>No parking slot records found. Please add a parking slot.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+
+        result.slots.forEach(slot => {
+            const status = slot.status || 'available';
+
+            html += `
+                <div class="slot-card ${escapeHTML(status)}">
+
+                    ${slot.image_path ? `
+                        <img class="slot-card-image"
+                            src="${escapeHTML(slot.image_path)}"
+                            alt="Parking Slot ${escapeHTML(slot.slot_number)}"
+                            loading="lazy"
+                            onerror="this.style.display='none'">
+                    ` : ''}
+
+                    <div class="slot-number">
+                        <i class="fas fa-square-parking"></i>
+                        Slot ${escapeHTML(slot.slot_number)}
+                    </div>
+
+                    <div class="slot-location">
+                        <i class="fas fa-location-dot"></i>
+                        ${escapeHTML(slot.location || 'Location not specified')}
+                    </div>
+
+                    <div class="slot-details">
+                        ${escapeHTML(slot.details || 'No parking slot details provided.')}
+                    </div>
+
+                    <div class="slot-name">
+                        ${slot.temporary_name ? escapeHTML(slot.temporary_name) : 'No assigned vehicle'}
+                    </div>
+
+                    <span class="status ${escapeHTML(status)}">
+                        ${escapeHTML(status)}
+                    </span>
+
+                </div>
+            `;
+        });
+
+        grid.innerHTML = html;
+
+    } catch (error) {
+        console.error(error);
+        grid.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-triangle-exclamation"></i>
+                <h3>Unable to Load Slots</h3>
+            </div>
+        `;
+    }
+}
+
+async function loadParkingSlotsForForm() {
+    const select = document.getElementById('slot_id');
+    if (!select) return;
+
+    try {
+        const result = await apiCall('getParkingSlots');
+
+        select.innerHTML = `<option value="">Auto Assign Available Slot</option>`;
+
+        if (result.success && result.slots) {
+            result.slots.forEach(slot => {
+                if (slot.status === 'available') {
+                    const option = document.createElement('option');
+                    option.value = slot.id;
+                    option.textContent = `Slot ${slot.slot_number}`;
+                    select.appendChild(option);
+                }
+            });
+        }
+
+        updateBookingSummary();
+    } catch (error) { console.error(error); }
+}
+
+/* =========================================================
+   BOOKING SCHEDULE
+========================================================= */
+
+async function loadSchedule() {
+    try {
+        const result = await apiCall('getSchedule');
+        if (!result.success) return;
+
+        scheduleBookings = result.bookings || [];
+        renderCalendar();
+
+        if (selectedDate) showDateDetails(selectedDate);
+    } catch (error) { console.error('Schedule:', error); }
+}
+
+function renderCalendar() {
+
+    const calendar = document.getElementById('calendarDays');
+    const title = document.getElementById('calendarMonthYear');
+    if (!calendar || !title) return;
+
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+
+    title.textContent = `${MONTH_NAMES[month]} ${year}`;
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    calendar.innerHTML = '';
+
+    for (let i = 0; i < firstDay; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'calendar-day empty';
+        calendar.appendChild(empty);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+
+        const date = new Date(year, month, day);
+        const dateString = formatDateLocal(date);
+        const bookings = getBookingsForDate(dateString);
+
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+
+        if (isToday(date)) dayElement.classList.add('today');
+        if (selectedDate === dateString) dayElement.classList.add('selected');
+
+        dayElement.innerHTML = `
+            <div class="day-number">${day}</div>
+            ${bookings.length ? `
+                <span class="booking-count">
+                    ${bookings.length} ${bookings.length === 1 ? 'booking' : 'bookings'}
+                </span>
+            ` : ''}
+        `;
+
+        dayElement.onclick = function() {
+            selectedDate = dateString;
+            renderCalendar();
+            showDateDetails(dateString);
+        };
+
+        calendar.appendChild(dayElement);
+    }
+}
+
+function getBookingsForDate(dateString) {
+    return scheduleBookings.filter(booking => {
+        const arrival = booking.arrival_date;
+        const departure = booking.departure_date;
+
+        if (!arrival) return false;
+
+        if (!departure || departure === arrival) return arrival === dateString;
+
+        return (dateString >= arrival && dateString <= departure);
+    });
+}
+
+function showDateDetails(dateString) {
+
+    const container = document.getElementById('dayDetails');
+    if (!container) return;
+
+    const bookings = getBookingsForDate(dateString);
+
+    const formattedDate = new Date(dateString + 'T00:00:00').toLocaleDateString('en-PH', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    let html = `
+        <h3>${escapeHTML(formattedDate)}</h3>
+        <p class="day-details-subtitle">
+            ${bookings.length ? `${bookings.length} booking(s) on this date.` : 'No booking on this date.'}
+        </p>
+    `;
+
+    if (!bookings.length) {
+        html += `
+            <div class="empty-state">
+                <i class="fas fa-calendar-xmark"></i>
+                <h3>No Booking</h3>
+                <p>There is no booking registered for this date.</p>
+            </div>
+        `;
+        container.innerHTML = html;
+        return;
+    }
+
+    bookings.forEach(booking => {
+        html += `
+            <div class="booking-detail-card">
+                <h4><i class="fas fa-user"></i> ${escapeHTML(booking.guest_name || 'Guest')}</h4>
+                <div class="detail-row"><span>Address</span><span>${escapeHTML(booking.guest_address || 'N/A')}</span></div>
+                <div class="detail-row"><span>Contact</span><span>${escapeHTML(booking.guest_contact || 'N/A')}</span></div>
+                <div class="detail-row"><span>Company</span><span>${escapeHTML(booking.company_name || 'N/A')}</span></div>
+                <div class="detail-row"><span>Arrival</span><span>${escapeHTML(booking.arrival_date || 'N/A')}</span></div>
+                <div class="detail-row"><span>Departure</span><span>${escapeHTML(booking.departure_date || 'N/A')}</span></div>
+                <div class="detail-row"><span>Nationality</span><span>${escapeHTML(booking.nationality || 'N/A')}</span></div>
+                <div class="detail-row"><span>No. of Person</span><span>${escapeHTML(booking.number_of_person || '1')}</span></div>
+                <div class="detail-row"><span>ID No.</span><span>${escapeHTML(booking.id_no || 'N/A')}</span></div>
+                <div class="detail-row"><span>Place Issued</span><span>${escapeHTML(booking.place_issued || 'N/A')}</span></div>
+                <div class="detail-row"><span>Parking Slot</span><span>${escapeHTML(booking.slot_number || 'N/A')}</span></div>
+                <div class="detail-row"><span>Status</span><span><span class="status ${escapeHTML(booking.status)}">${escapeHTML(booking.status)}</span></span></div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+function changeCalendarMonth(amount) {
+    calendarDate.setMonth(calendarDate.getMonth() + amount);
+    renderCalendar();
+}
+
+function goToToday() {
+    calendarDate = new Date();
+    selectedDate = formatDateLocal(calendarDate);
+    renderCalendar();
+    showDateDetails(selectedDate);
+}
+
+/* =========================================================
+   HISTORY
+========================================================= */
+
+async function loadHistory() {
+
+    const container = document.getElementById('historyTableContainer');
+    if (!container) return;
+
+    container.innerHTML = `<div class="empty-state">Loading transaction history...</div>`;
+
+    try {
+        const result = await apiCall('getHistory');
+
+        if (!result.success || !result.history.length) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-clock-rotate-left"></i>
+                    <h3>No Transactions Found</h3>
+                    <p>No booking transactions have been recorded yet.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = `
+            <table class="data-table responsive-table">
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Reference #</th><th>Guest Name</th><th>Contact</th>
+                        <th>Company</th><th>Arrival</th><th>Departure</th><th>Slot</th>
+                        <th>Amount</th><th>Status</th><th>Payment Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        result.history.forEach(booking => {
+            const statusClass = booking.status || 'pending';
+            const statusDisplay = booking.status || 'pending';
+
+            const paymentDate = booking.payment_date
+                ? new Date(booking.payment_date).toLocaleDateString('en-PH', {
+                    year: 'numeric', month: 'short', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                  })
+                : 'N/A';
+
+            html += `
+                <tr>
+                    <td data-label="ID">#${escapeHTML(booking.id)}</td>
+                    <td data-label="Reference #">${escapeHTML(booking.reference_number || 'N/A')}</td>
+                    <td data-label="Guest Name">${escapeHTML(booking.guest_name || 'N/A')}</td>
+                    <td data-label="Contact">${escapeHTML(booking.guest_contact || 'N/A')}</td>
+                    <td data-label="Company">${escapeHTML(booking.company_name || 'N/A')}</td>
+                    <td data-label="Arrival">${escapeHTML(booking.arrival_date || 'N/A')}</td>
+                    <td data-label="Departure">${escapeHTML(booking.departure_date || 'N/A')}</td>
+                    <td data-label="Slot">${escapeHTML(booking.slot_number || 'N/A')}</td>
+                    <td data-label="Amount">₱${Number(booking.total_amount || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
+                    <td data-label="Status"><span class="status ${escapeHTML(statusClass)}">${escapeHTML(statusDisplay)}</span></td>
+                    <td data-label="Payment Date">${escapeHTML(paymentDate)}</td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+
+    } catch (error) {
+        console.error(error);
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-triangle-exclamation"></i>
+                <h3>Unable to Load History</h3>
+                <p>Please check your database connection.</p>
+            </div>
+        `;
+    }
+}
+
+/* =========================================================
+   ALL USER BOOKINGS + QR CODES
+========================================================= */
+
+async function loadAllUserBookings() {
+
+    const container = document.getElementById('userBookingsContainer');
+    if (!container) return;
+
+    container.innerHTML = `<div class="empty-state">Loading user bookings...</div>`;
+
+    try {
+        const result = await apiCall('getAllUserBookings');
+
+        if (!result.success || !result.bookings.length) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-users"></i>
+                    <h3>No User Bookings Found</h3>
+                    <p>No approved or completed bookings yet.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = `
+            <table class="data-table responsive-table">
+                <thead>
+                    <tr>
+                        <th>ID</th><th>QR Code</th><th>Guest</th><th>Contact</th>
+                        <th>Slot</th><th>Arrival</th><th>Departure</th>
+                        <th>Status</th><th>Released At</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        result.bookings.forEach(booking => {
+            const statusClass = booking.status || 'pending';
+            const qrId = 'qr-' + booking.id;
+
+            html += `
+                <tr>
+                    <td data-label="ID">#${escapeHTML(booking.id)}</td>
+                    <td data-label="QR Code"><div class="qr-thumb" id="${qrId}"></div></td>
+                    <td data-label="Guest">${escapeHTML(booking.guest_name || 'N/A')}</td>
+                    <td data-label="Contact">${escapeHTML(booking.guest_contact || 'N/A')}</td>
+                    <td data-label="Slot">${escapeHTML(booking.slot_number || 'N/A')}</td>
+                    <td data-label="Arrival">${escapeHTML(booking.arrival_date || 'N/A')}</td>
+                    <td data-label="Departure">${escapeHTML(booking.departure_date || 'N/A')}</td>
+                    <td data-label="Status"><span class="status ${escapeHTML(statusClass)}">${escapeHTML(statusClass)}</span></td>
+                    <td data-label="Released At">${escapeHTML(booking.released_at || 'N/A')}</td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+
+        result.bookings.forEach(booking => {
+            const target = document.getElementById('qr-' + booking.id);
+            if (!target || typeof QRCode === 'undefined') return;
+
+            const qrPayload = 'AF-BOOKING-' + booking.id + '-REF-' + (booking.id ? ('REF-' + booking.id) : 'NA');
+
+            target.innerHTML = '';
+            new QRCode(target, {
+                text: qrPayload,
+                width: 70,
+                height: 70,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        });
+
+    } catch (error) {
+        console.error(error);
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-triangle-exclamation"></i>
+                <h3>Unable to Load User Bookings</h3>
+                <p>Please check your database connection.</p>
+            </div>
+        `;
+    }
+}
+
+/* =========================================================
+   QR SCANNER
+========================================================= */
+
+function startQrScanner() {
+
+    const readerEl = document.getElementById('qrReader');
+    if (!readerEl) return;
+
+    if (typeof Html5Qrcode === 'undefined') {
+        readerEl.innerHTML = '<div style="padding:20px;color:#fff;">QR scanner library not loaded.</div>';
+        return;
+    }
+
+    stopQrScanner();
+    readerEl.innerHTML = '';
+
+    html5QrScanner = new Html5Qrcode('qrReader');
+
+    const scanConfig = {
+        fps: 30,
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            const size = Math.floor(minEdge * 0.85);
+            return { width: size, height: size };
+        },
+        aspectRatio: 1.0,
+        disableFlip: false
+    };
+
+    const cameraConfig = {
+        facingMode: 'environment'
+    };
+
+    html5QrScanner.start(
+        cameraConfig,
+        scanConfig,
+        (decodedText, decodedResult) => {
+            const now = Date.now();
+            if (decodedText === lastQrScanText && (now - lastQrScanTime) < 3000) return;
+
+            lastQrScanText = decodedText;
+            lastQrScanTime = now;
+
+            showScanResult(decodedText);
+            handleQrScan(decodedText);
+        },
+        (errorMessage) => {
+            /* Per-frame "no QR found" — ignore */
+        }
+    ).catch(err => {
+        console.error('QR scanner error:', err);
+        readerEl.innerHTML = '<div style="padding:20px;color:#fff;">Camera not available. Grant camera permission and try again.</div>';
+    });
+}
+
+function stopQrScanner() {
+    if (html5QrScanner) {
+        html5QrScanner.stop().then(() => {
+            html5QrScanner.clear();
+            html5QrScanner = null;
+        }).catch(() => { html5QrScanner = null; });
+    }
+}
+
+function showScanResult(scannedText) {
+
+    const resultBox = document.getElementById('qrResultContent');
+    if (!resultBox) return;
+
+    resultBox.innerHTML = `
+        <div class="qr-status-badge" style="background:rgba(124,58,237,.15);color:#7c3aed;">
+            ⟳ Processing...
+        </div>
+        <div class="qr-result-line" style="margin-top:10px;">
+            <span>Scanned</span>
+            <span style="font-family:monospace;font-size:10px;word-break:break-all;max-width:180px;">
+                ${escapeHTML(scannedText.substring(0, 120))}
+            </span>
+        </div>
+    `;
+}
+
+async function handleQrScan(qrData) {
+
+    const resultBox = document.getElementById('qrResultContent');
+    if (!resultBox) return;
+
+    try {
+        const result = await apiCall('scanQrRelease', { qr_data: qrData });
+
+        if (result.success) {
+
+            resultBox.innerHTML = `
+                <div class="qr-status-badge success">✓ RELEASED</div>
+                <div class="qr-result-line" style="margin-top:10px;">
+                    <span>Booking ID</span>
+                    <span>#${escapeHTML(result.booking.id)}</span>
+                </div>
+                <div class="qr-result-line">
+                    <span>Guest</span>
+                    <span>${escapeHTML(result.booking.guest_name || 'N/A')}</span>
+                </div>
+                <div class="qr-result-line">
+                    <span>Slot ID</span>
+                    <span>${escapeHTML(result.booking.slot_id)}</span>
+                </div>
+                <div class="qr-result-line">
+                    <span>Booked From</span>
+                    <span>${escapeHTML(result.booking.arrival_date || 'N/A')}</span>
+                </div>
+                <div class="qr-result-line">
+                    <span>Booked Until</span>
+                    <span>${escapeHTML(result.booking.departure_date || 'N/A')}</span>
+                </div>
+                <p style="margin-top:10px;font-size:12px;color:var(--muted);">
+                    ${escapeHTML(result.message)}
+                </p>
+                <p style="margin-top:12px;font-size:11px;color:#059669;font-weight:600;">
+                    ✓ Parking slot & booked dates are now available.
+                </p>
+            `;
+
+            loadParkingSlots();
+            loadAllUserBookings();
+            loadSchedule();
+
+        } else {
+
+            let extraInfo = '';
+            if (result.scanned_content) {
+                extraInfo = `
+                    <div class="qr-result-line" style="margin-top:10px;">
+                        <span>Scanned</span>
+                        <span style="font-family:monospace;font-size:10px;word-break:break-all;max-width:180px;">
+                            ${escapeHTML(result.scanned_content)}
+                        </span>
+                    </div>
+                `;
+            }
+
+            resultBox.innerHTML = `
+                <div class="qr-status-badge error">
+                    ✕ Not a Valid Booking QR
+                </div>
+                <p style="margin-top:10px;font-size:12px;color:#ef4444;font-weight:600;">
+                    ${escapeHTML(result.message || 'Invalid QR code.')}
+                </p>
+                ${extraInfo}
+                <p style="margin-top:12px;font-size:11px;color:var(--muted);">
+                    Tip: Scan the QR printed on the guest's receipt. It should start with "AF-BOOKING-".
+                </p>
+                <button type="button"
+                        onclick="resetScanResult()"
+                        class="btn btn-secondary"
+                        style="margin-top:12px;width:100%;">
+                    <i class="fas fa-redo"></i> Try Again
+                </button>
+            `;
+        }
+
+    } catch (error) {
+        console.error(error);
+        resultBox.innerHTML = `
+            <div class="qr-status-badge error">
+                ✕ Network error. Please try again.
+            </div>
+            <button type="button"
+                    onclick="resetScanResult()"
+                    class="btn btn-secondary"
+                    style="margin-top:12px;width:100%;">
+                <i class="fas fa-redo"></i> Try Again
+            </button>
+        `;
+    }
+}
+
+async function releaseByReference() {
+
+    const input = document.getElementById('bookingReferenceInput');
+    const button = document.getElementById('referenceReleaseBtn');
+    const resultBox = document.getElementById('qrResultContent');
+
+    if (!input || !resultBox) return;
+
+    const referenceNumber = input.value.trim();
+
+    if (!referenceNumber) {
+        resultBox.innerHTML = `
+            <div class="qr-status-badge error">✕ Reference number required</div>
+            <p style="margin-top:10px;font-size:12px;color:#ef4444;font-weight:600;">
+                Please type the booking reference number.
+            </p>
+        `;
+        input.focus();
+        return;
+    }
+
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+    }
+
+    resultBox.innerHTML = `
+        <div class="qr-status-badge" style="background:rgba(124,58,237,.15);color:#7c3aed;">
+            ⟳ Checking reference number...
+        </div>
+    `;
+
+    try {
+        const result = await apiCall('releaseByReference', {
+            reference_number: referenceNumber
+        });
+
+        if (result.success) {
+            resultBox.innerHTML = `
+                <div class="qr-status-badge success">✓ RELEASED</div>
+                <div class="qr-result-line" style="margin-top:10px;">
+                    <span>Reference #</span>
+                    <span>${escapeHTML(result.booking.reference_number || referenceNumber)}</span>
+                </div>
+                <div class="qr-result-line">
+                    <span>Booking ID</span>
+                    <span>#${escapeHTML(result.booking.id)}</span>
+                </div>
+                <div class="qr-result-line">
+                    <span>Guest</span>
+                    <span>${escapeHTML(result.booking.guest_name || 'N/A')}</span>
+                </div>
+                <div class="qr-result-line">
+                    <span>Slot ID</span>
+                    <span>${escapeHTML(result.booking.slot_id)}</span>
+                </div>
+                <div class="qr-result-line">
+                    <span>Booked From</span>
+                    <span>${escapeHTML(result.booking.arrival_date || 'N/A')}</span>
+                </div>
+                <div class="qr-result-line">
+                    <span>Booked Until</span>
+                    <span>${escapeHTML(result.booking.departure_date || 'N/A')}</span>
+                </div>
+                <p style="margin-top:10px;font-size:12px;color:var(--muted);">
+                    ${escapeHTML(result.message)}
+                </p>
+                <p style="margin-top:12px;font-size:11px;color:#059669;font-weight:600;">
+                    ✓ Parking slot & booked dates are now available.
+                </p>
+            `;
+
+            input.value = '';
+            loadParkingSlots();
+            loadAllUserBookings();
+            loadSchedule();
+
+        } else {
+            resultBox.innerHTML = `
+                <div class="qr-status-badge error">✕ Reference Not Found</div>
+                <p style="margin-top:10px;font-size:12px;color:#ef4444;font-weight:600;">
+                    ${escapeHTML(result.message || 'Invalid booking reference number.')}
+                </p>
+                <button type="button" onclick="document.getElementById('bookingReferenceInput').focus()" class="btn btn-secondary" style="margin-top:12px;width:100%;">
+                    <i class="fas fa-keyboard"></i> Try Another Reference
+                </button>
+            `;
+        }
+
+    } catch (error) {
+        console.error(error);
+        resultBox.innerHTML = `
+            <div class="qr-status-badge error">✕ Network error. Please try again.</div>
+        `;
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-unlock"></i> Release';
+        }
+    }
+}
+
+function resetScanResult() {
+    const resultBox = document.getElementById('qrResultContent');
+    if (resultBox) {
+        resultBox.innerHTML = `<p style="color:var(--muted);font-size:12px;">Waiting for QR scan...</p>`;
+    }
+    lastQrScanText = '';
+    lastQrScanTime = 0;
+}
+
+/* =========================================================
+   ADMIN QUICK-ACCESS QR
+========================================================= */
+
+function generateAdminQuickQr() {
+
+    const target = document.getElementById('adminQuickQr');
+    const urlText = document.getElementById('adminQrUrlText');
+    if (!target || typeof QRCode === 'undefined') return;
+
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+    const path = window.location.pathname;
+
+    let qrHost = hostname;
+
+    const isLocalhost =
+        hostname === 'localhost' ||
+        hostname === '127.0.0.1' ||
+        hostname === '::1' ||
+        hostname === '';
+
+    if (isLocalhost) {
+        qrHost = FALLBACK_LAN_IP;
+    }
+
+    let hostPart = qrHost;
+    if (port && port !== '80' && port !== '443') {
+        hostPart = qrHost + ':' + port;
+    }
+
+    const adminUrl = protocol + '//' + hostPart + path + '?page=qrscan';
+
+    if (urlText) {
+        urlText.textContent = adminUrl;
+    }
+
+
+    target.innerHTML = '';
+    new QRCode(target, {
+        text: adminUrl,
+        width: 160,
+        height: 160,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+    });
+}
+
+/* =========================================================
+   AUTO-OPEN PAGE FROM URL
+========================================================= */
+
+function openPageFromUrl() {
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageParam = urlParams.get('page');
+
+    if (!pageParam) return;
+
+    const allowedPages = [
+        'dashboard', 'bookings', 'onlinebookings', 'parking',
+        'schedule', 'history', 'userbookings', 'qrscan'
+    ];
+
+    if (!allowedPages.includes(pageParam)) return;
+
+    setTimeout(function() {
+        const menuLink = document.querySelector(
+            `.sidebar-menu li[data-page="${pageParam}"] a`
+        );
+
+        if (menuLink) {
+            showPage(pageParam, menuLink);
+        } else {
+            showPage(pageParam);
+        }
+    }, 100);
+}
+
+/* =========================================================
+   BOOKING FORM LIVE SUMMARY
+========================================================= */
+
+function updateBookingSummary() {
+
+    const name = document.getElementById('guest_name')?.value || '---';
+    const contact = document.getElementById('guest_contact')?.value || '---';
+    const arrival = document.getElementById('arrival_date')?.value || '---';
+    const departure = document.getElementById('departure_date')?.value || '---';
+    const persons = document.getElementById('number_of_person')?.value || '1';
+    const amount = Number(document.getElementById('total_amount')?.value || 0);
+
+    const slot = document.getElementById('slot_id');
+    const slotText = slot && slot.selectedIndex >= 0 ? slot.options[slot.selectedIndex].text : 'Auto';
+
+    document.getElementById('summaryName').textContent = name;
+    document.getElementById('summaryContact').textContent = contact;
+    document.getElementById('summaryArrival').textContent = arrival;
+    document.getElementById('summaryDeparture').textContent = departure;
+    document.getElementById('summaryPersons').textContent = persons;
+    document.getElementById('summarySlot').textContent = slotText;
+    document.getElementById('summaryAmount').textContent =
+        '₱' + amount.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+}
+
+document.addEventListener('input', function(event) {
+    if (event.target.closest('#bookingForm')) updateBookingSummary();
+});
+
+document.addEventListener('change', function(event) {
+    if (event.target.closest('#bookingForm')) updateBookingSummary();
+});
+
+/* =========================================================
+   DATE HELPERS
+========================================================= */
+
+function formatDateLocal(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function isToday(date) {
+    const today = new Date();
+    return (
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+    );
+}
+
+/* =========================================================
+   HTML ESCAPE
+========================================================= */
+
+function escapeHTML(value) {
+    if (value === null || value === undefined) return '';
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+/* =========================================================
+   DARK MODE
+========================================================= */
+
+function toggleDarkMode() {
+
+    document.body.classList.toggle('dark-mode');
+    const dark = document.body.classList.contains('dark-mode');
+
+    document.getElementById('darkModeToggle').innerHTML =
+        dark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+
+    localStorage.setItem('darkMode', dark ? 'enabled' : 'disabled');
+
+    if (incomeChart) {
+        const data = incomeChart.datasets[0].data;
+        updateIncomeChart(data, document.getElementById('incomeYear').value);
+    }
+}
+
+/* =========================================================
+   MOBILE SIDEBAR
+========================================================= */
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    const isOpen = sidebar.classList.toggle('open');
+    if (overlay) overlay.classList.toggle('show', isOpen);
+}
+
+/* =========================================================
+   SESSION TIMER
+========================================================= */
+
+function resetInactivityTimer() {
+
+    if (inactivityTimer) clearTimeout(inactivityTimer);
+
+    sessionTimeLeft = SESSION_DURATION;
+    warningShown = false;
+    hideWarning();
+    updateTimerDisplay();
+
+    inactivityTimer = setTimeout(showWarning, (SESSION_DURATION - WARNING_THRESHOLD) * 1000);
+    startSessionTimer();
+}
+
+function startSessionTimer() {
+
+    if (sessionTimerInterval) clearInterval(sessionTimerInterval);
+
+    sessionTimerInterval = setInterval(function() {
+        if (sessionTimeLeft > 0) {
+            sessionTimeLeft--;
+            updateTimerDisplay();
+            if (sessionTimeLeft <= WARNING_THRESHOLD) showWarning();
+        } else {
+            clearInterval(sessionTimerInterval);
+            window.location.href = '?logout=1';
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+
+    const minutes = Math.floor(sessionTimeLeft / 60);
+    const seconds = sessionTimeLeft % 60;
+
+    document.getElementById('sessionTimer').textContent =
+        minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+
+    const warningSeconds = document.getElementById('sessionWarningSeconds');
+    if (warningSeconds) warningSeconds.textContent = Math.max(0, sessionTimeLeft);
+}
+
+function showWarning() {
+    if (sessionTimeLeft <= WARNING_THRESHOLD) {
+        document.getElementById('sessionWarning').classList.add('show');
+    }
+}
+
+function hideWarning() {
+    document.getElementById('sessionWarning').classList.remove('show');
+}
+
+async function extendSession() {
+    try {
+        await apiCall('extendSession');
+        sessionTimeLeft = SESSION_DURATION;
+        updateTimerDisplay();
+        hideWarning();
+        resetInactivityTimer();
+    } catch (error) { console.error(error); }
+}
+
+/* =========================================================
+   USER ACTIVITY
+========================================================= */
+
+['mousedown','mousemove','keypress','scroll','touchstart','click','keydown']
+.forEach(event => {
+    document.addEventListener(event, resetInactivityTimer, { passive: true });
+});
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+window.addEventListener('load', function() {
+
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark-mode');
+        document.getElementById('darkModeToggle').innerHTML = '<i class="fas fa-sun"></i>';
+    }
+
+    updatePhilippinesClock();
+    updateOnlineStatus();
+
+    setupContactValidation();
+    setupParkingSlotImagePreview();
+
+    resetInactivityTimer();
+
+    loadMonthlyIncome();
+    loadParkingSlotsForForm();
+
+    renderCalendar();
+
+    selectedDate = formatDateLocal(new Date());
+
+    document.getElementById('arrival_date').min = formatDateLocal(new Date());
+    document.getElementById('departure_date').min = formatDateLocal(new Date());
+
+    loadHistory();
+
+    // Load the pending online bookings count so the badge shows up
+    loadOnlineBookings();
+
+    generateAdminQuickQr();
+    openPageFromUrl();
+});
+
+/* =========================================================
+   ARRIVAL / DEPARTURE VALIDATION
+========================================================= */
+
+document.getElementById('arrival_date').addEventListener('change', function() {
+
+    const departure = document.getElementById('departure_date');
+    departure.min = this.value;
+
+    if (departure.value && departure.value < this.value) {
+        departure.value = this.value;
+    }
+
+    updateBookingSummary();
+});
+
+document.getElementById('departure_date').addEventListener('change', function() {
+
+    const arrival = document.getElementById('arrival_date');
+
+    if (arrival.value && this.value < arrival.value) {
+        alert('Departure date cannot be earlier than arrival date.');
+        this.value = arrival.value;
+    }
+
+    updateBookingSummary();
+});
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+async function loadSettings() {
+    try {
+        const result = await apiCall('getSettings');
+
+        if (!result.success) {
+            alert(result.message || 'Unable to load settings.');
+            return;
+        }
+
+        const admin = result.admin || {};
+        const resort = result.resort || {};
+
+        const currentUsername = document.getElementById('settingsCurrentUsername');
+        const newUsername = document.getElementById('settingsNewUsername');
+
+        if (currentUsername) currentUsername.value = admin.username || '';
+        if (newUsername) newUsername.value = admin.username || '';
+
+        document.getElementById('resortName').value = resort.resort_name || 'Agua Frio Garden Resort';
+        document.getElementById('resortAddress').value = resort.address || '';
+        document.getElementById('resortContact').value = resort.contact || '';
+        document.getElementById('resortEmail').value = resort.email || '';
+        document.getElementById('resortDescription').value = resort.description || '';
+        document.getElementById('resortCheckIn').value = resort.check_in || '2:00 PM';
+        document.getElementById('resortCheckOut').value = resort.check_out || '12:00 PM';
+
+        updateResortPreview();
+    } catch (error) {
+        console.error(error);
+        alert('Unable to load settings. Please check the database connection.');
+    }
+}
+
+async function updateAdminSettings(event) {
+    event.preventDefault();
+
+    const currentPassword = document.getElementById('settingsCurrentPassword').value;
+    const newUsername = document.getElementById('settingsNewUsername').value.trim();
+    const newPassword = document.getElementById('settingsNewPassword').value;
+    const confirmPassword = document.getElementById('settingsConfirmPassword').value;
+
+    if (!currentPassword || !newUsername) {
+        alert('Please complete the required account fields.');
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        alert('New password and confirmation do not match.');
+        return;
+    }
+
+    const button = document.getElementById('saveAdminSettingsBtn');
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+    try {
+        const result = await apiCall('updateAdminSettings', {
+            current_password: currentPassword,
+            new_username: newUsername,
+            new_password: newPassword,
+            confirm_password: confirmPassword
+        });
+
+        if (result.success) {
+            document.getElementById('settingsCurrentPassword').value = '';
+            document.getElementById('settingsNewPassword').value = '';
+            document.getElementById('settingsConfirmPassword').value = '';
+            document.getElementById('settingsCurrentUsername').value = result.username;
+            document.getElementById('settingsNewUsername').value = result.username;
+            alert(result.message);
+        } else {
+            alert(result.message || 'Unable to update admin account.');
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Something went wrong while updating the admin account.');
+    } finally {
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-floppy-disk"></i> Save Account';
+    }
+}
+
+function resetAdminSettingsForm() {
+    const currentUsername = document.getElementById('settingsCurrentUsername').value;
+    document.getElementById('settingsCurrentPassword').value = '';
+    document.getElementById('settingsNewPassword').value = '';
+    document.getElementById('settingsConfirmPassword').value = '';
+    document.getElementById('settingsNewUsername').value = currentUsername;
+}
+
+async function updateResortSettings(event) {
+    event.preventDefault();
+
+    const button = document.getElementById('saveResortSettingsBtn');
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+    try {
+        const result = await apiCall('updateResortSettings', {
+            resort_name: document.getElementById('resortName').value.trim(),
+            address: document.getElementById('resortAddress').value.trim(),
+            contact: document.getElementById('resortContact').value.trim(),
+            email: document.getElementById('resortEmail').value.trim(),
+            description: document.getElementById('resortDescription').value.trim(),
+            check_in: document.getElementById('resortCheckIn').value.trim(),
+            check_out: document.getElementById('resortCheckOut').value.trim()
+        });
+
+        if (result.success) {
+            updateResortPreview();
+            alert(result.message);
+        } else {
+            alert(result.message || 'Unable to update resort information.');
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Something went wrong while updating resort information.');
+    } finally {
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-floppy-disk"></i> Save Resort Info';
+    }
+}
+
+function updateResortPreview() {
+    const name = document.getElementById('resortName')?.value.trim() || 'Agua Frio Garden Resort';
+    const address = document.getElementById('resortAddress')?.value.trim() || 'Address not set';
+    const contact = document.getElementById('resortContact')?.value.trim() || 'Contact not set';
+    const email = document.getElementById('resortEmail')?.value.trim() || 'Email not set';
+    const description = document.getElementById('resortDescription')?.value.trim() || 'A relaxing garden resort and events venue for guests, celebrations, and private stays.';
+    const checkIn = document.getElementById('resortCheckIn')?.value.trim() || '2:00 PM';
+    const checkOut = document.getElementById('resortCheckOut')?.value.trim() || '12:00 PM';
+
+    document.getElementById('previewResortName').textContent = name;
+    document.getElementById('previewResortAddress').textContent = address;
+    document.getElementById('previewResortContact').textContent = contact;
+    document.getElementById('previewResortEmail').textContent = email;
+    document.getElementById('previewResortDescription').textContent = description;
+    document.getElementById('previewResortHours').textContent = 'Check-in ' + checkIn + ' · Check-out ' + checkOut;
+}
+
+['resortName','resortAddress','resortContact','resortEmail','resortDescription','resortCheckIn','resortCheckOut'].forEach(function(id) {
+    const element = document.getElementById(id);
+    if (element) element.addEventListener('input', updateResortPreview);
+});
+
+/* =========================================================
+   EXPOSE FUNCTIONS TO GLOBAL SCOPE
+========================================================= */
+
+window.showPage = showPage;
+window.toggleDarkMode = toggleDarkMode;
+window.toggleSidebar = toggleSidebar;
+window.extendSession = extendSession;
+window.closeReceipt = closeReceipt;
+window.printReceipt = printReceipt;
+window.submitBooking = submitBooking;
+window.submitParkingSlot = submitParkingSlot;
+window.resetParkingSlotPreview = resetParkingSlotPreview;
+window.loadParkingSlots = loadParkingSlots;
+window.loadSchedule = loadSchedule;
+window.loadHistory = loadHistory;
+window.loadAllUserBookings = loadAllUserBookings;
+window.loadMonthlyIncome = loadMonthlyIncome;
+window.changeCalendarMonth = changeCalendarMonth;
+window.goToToday = goToToday;
+window.selectDate = selectDate;
+window.resetScanResult = resetScanResult;
+window.loadParkingSlotsForForm = loadParkingSlotsForForm;
+window.loadOnlineBookings = loadOnlineBookings;
+window.acceptOnlineBooking = acceptOnlineBooking;
+window.rejectOnlineBooking = rejectOnlineBooking;
+window.loadSettings = loadSettings;
+window.updateAdminSettings = updateAdminSettings;
+window.resetAdminSettingsForm = resetAdminSettingsForm;
+window.updateResortSettings = updateResortSettings;
+
+</script>
+
+</body>
+</html>
